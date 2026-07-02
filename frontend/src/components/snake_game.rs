@@ -49,11 +49,7 @@ pub fn snake_game(props: &SnakeGameProps) -> Html {
 
             <MobileDpad on_press={state.on_dpad_press.clone()} />
 
-            {if !*state.started || *state.game_over {
-                html! { <LeaderboardPanel leaderboard={(*state.leaderboard).clone()} /> }
-            } else {
-                html! {}
-            }}
+            <LeaderboardPanel leaderboard={(*state.leaderboard).clone()} />
         </div>
     }
 }
