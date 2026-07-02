@@ -24,7 +24,7 @@ time = { version = "0.3", features = ["formatting", "macros"] }
 # `cors` feature intentionally not enabled: shared-backend builds the CORS
 # layer internally and we wire it via `cors_layer(&config)`. Enabling it here
 # would be dead surface area.
-tower-http = { version = "0.6", features = ["fs", "trace"] }
+tower-http = { version = "0.7", features = ["fs", "trace"] }
 dotenvy = "0.15"
 cookie = "0.18"
 axum-extra = { version = "0.12", features = ["cookie"] }
