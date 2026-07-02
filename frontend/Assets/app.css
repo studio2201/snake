@@ -109,8 +109,8 @@ main {
 .game-grid {
     display: flex;
     flex-direction: column;
-    width: min(80vw, 45vh);
-    height: min(80vw, 45vh);
+    width: min(80vw, 40vh);
+    height: min(80vw, 40vh);
     max-width: 400px;
     max-height: 400px;
     background: rgba(0, 0, 0, 0.4);
@@ -119,20 +119,22 @@ main {
 
 .game-wrapper.playing {
     max-width: 600px;
+    width: 100%;
+}
+
+.game-wrapper.playing .game-board-container {
+    padding: 1rem;
+}
+
+.game-wrapper.playing .score-board {
+    margin-bottom: 0.5rem;
 }
 
 .game-wrapper.playing .game-grid {
-    width: min(85vw, 60vh);
-    height: min(85vw, 60vh);
-    max-width: 550px;
-    max-height: 550px;
-}
-
-@media (max-width: 480px) {
-    .game-grid {
-        width: 300px;
-        height: 300px;
-    }
+    width: min(80vw, 50vh);
+    height: min(80vw, 50vh);
+    max-width: 500px;
+    max-height: 500px;
 }
 
 .grid-row {

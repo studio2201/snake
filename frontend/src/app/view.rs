@@ -24,6 +24,12 @@ impl App {
 
 
 
+        let content_class = if self.authenticated {
+            "app-body"
+        } else {
+            "container"
+        };
+
         html! {
             <ContextProvider<crate::i18n::LocaleContext> context={locale_context}>
                 <Header
@@ -47,7 +53,7 @@ impl App {
                     enable_print={self.enable_print}
                     version={Some(self.app_version.clone())}
                 />
-                <div class="container">
+                <div class={content_class}>
                     {if !self.authenticated {
                         html! { <Login on_login_success={
                             let link = ctx.link().clone();
