@@ -148,6 +148,23 @@ main {
     animation: pulse 1s infinite alternate;
 }
 
+.gold-food {
+    background-color: #ffd700 !important;
+    box-shadow: 0 0 18px #ffd700, 0 0 8px #ffd700 !important;
+    animation: goldPulse 0.5s infinite alternate !important;
+}
+
+@keyframes goldPulse {
+    from {
+        transform: scale(0.9);
+        box-shadow: 0 0 8px #ffd700;
+    }
+    to {
+        transform: scale(1.15);
+        box-shadow: 0 0 22px #ffd700;
+    }
+}
+
 /* Overlays */
 .overlay {
     position: absolute;

@@ -8,6 +8,7 @@ pub fn handle_tick(
     score: &UseStateHandle<u32>,
     high_score: &UseStateHandle<u32>,
     game_over: &UseStateHandle<bool>,
+    is_gold: &UseStateHandle<bool>,
     grid_size: i32,
     generate_food: &impl Fn() -> (i32, i32),
 ) {
@@ -30,7 +31,8 @@ pub fn handle_tick(
     next_snake.extend_from_slice(&current_snake);
 
     if new_head == **food {
-        let new_score = **score + 10;
+        let points = if **is_gold { 30 } else { 10 };
+        let new_score = **score + points;
         score.set(new_score);
         if new_score > **high_score {
             high_score.set(new_score);
@@ -40,6 +42,9 @@ pub fn handle_tick(
                 let _ = storage.set_item("snake_high_score", &new_score.to_string());
             }
         }
+        // Set gold status for next food (15% chance)
+        let next_is_gold = js_sys::Math::random() < 0.15;
+        is_gold.set(next_is_gold);
         food.set(generate_food());
     } else {
         next_snake.pop();

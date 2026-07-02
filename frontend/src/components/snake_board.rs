@@ -5,6 +5,7 @@ pub struct SnakeBoardProps {
     pub snake: Vec<(i32, i32)>,
     pub food: (i32, i32),
     pub grid_size: i32,
+    pub is_gold: bool,
 }
 
 #[function_component(SnakeBoard)]
@@ -30,7 +31,11 @@ pub fn snake_board(props: &SnakeBoardProps) -> Html {
                                     } else if is_snake_body {
                                         "grid-cell snake-body"
                                     } else if is_food {
-                                        "grid-cell food"
+                                        if props.is_gold {
+                                            "grid-cell food gold-food"
+                                        } else {
+                                            "grid-cell food"
+                                        }
                                     } else {
                                         "grid-cell"
                                     };

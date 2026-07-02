@@ -32,7 +32,7 @@ pub fn snake_game(props: &SnakeGameProps) -> Html {
             </div>
 
             <div class="board-relative-wrapper">
-                <SnakeBoard snake={(*state.snake).clone()} food={*state.food} grid_size={GRID_SIZE} />
+                <SnakeBoard snake={(*state.snake).clone()} food={*state.food} grid_size={GRID_SIZE} is_gold={*state.is_gold} />
                 <SnakeOverlay
                     started={*state.started}
                     game_over={*state.game_over}

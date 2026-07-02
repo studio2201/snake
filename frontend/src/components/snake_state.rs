@@ -16,6 +16,7 @@ pub struct SnakeState {
     pub game_over: UseStateHandle<bool>,
     pub paused: UseStateHandle<bool>,
     pub started: UseStateHandle<bool>,
+    pub is_gold: UseStateHandle<bool>,
     pub leaderboard: UseStateHandle<Vec<LeaderboardEntry>>,
     pub player_name: UseStateHandle<String>,
     pub submitting: UseStateHandle<bool>,
@@ -46,6 +47,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
     let game_over = use_state(|| false);
     let paused = use_state(|| false);
     let started = use_state(|| false);
+    let is_gold = use_state(|| false);
     let leaderboard = use_state(|| Vec::<LeaderboardEntry>::new());
     let player_name = use_state(|| "".to_string());
     let submitting = use_state(|| false);
@@ -81,6 +83,43 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
         });
     }
 
+    // Gold Food timeout hook
+    {
+        let is_gold = is_gold.clone();
+        let food = food.clone();
+        let snake = snake.clone();
+        use_effect_with((*is_gold, *food), move |&(gold, _f)| {
+            if !gold {
+                return Box::new(|| ()) as Box<dyn FnOnce()>;
+            }
+            
+            // Helper to generate food
+            let generate_food = {
+                let snake = snake.clone();
+                move || {
+                    let mut attempts = 0;
+                    loop {
+                        let x = (js_sys::Math::random() * GRID_SIZE as f64) as i32;
+                        let y = (js_sys::Math::random() * GRID_SIZE as f64) as i32;
+                        let on_snake = snake.iter().any(|&pos| pos == (x, y));
+                        if !on_snake || attempts > 100 {
+                            return (x, y);
+                        }
+                        attempts += 1;
+                    }
+                }
+            };
+
+            let is_gold = is_gold.clone();
+            let food = food.clone();
+            let timeout = gloo_timers::callback::Timeout::new(5000, move || {
+                is_gold.set(false);
+                food.set(generate_food());
+            });
+            Box::new(move || drop(timeout)) as Box<dyn FnOnce()>
+        });
+    }
+
     // Tick Interval Loop
     {
         let is_started = *started;
@@ -93,6 +132,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
         let score = score.clone();
         let high_score = high_score.clone();
         let game_over = game_over.clone();
+        let is_gold = is_gold.clone();
         let score_val = *score;
 
         // Helper to generate food
@@ -116,7 +156,6 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
             if !st || ps || go {
                 return Box::new(|| ()) as Box<dyn FnOnce()>;
             }
-            // Dynamic Difficulty: Starts at 170ms, speeds up by 15ms every 20 points, capped at 75ms.
             let duration = std::cmp::max(75, 170 - (s as i32 / 20) * 15) as u32;
             let interval = Interval::new(duration, move || {
                 handle_tick(
@@ -127,6 +166,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
                     &score,
                     &high_score,
                     &game_over,
+                    &is_gold,
                     GRID_SIZE,
                     &generate_food,
                 );
@@ -162,6 +202,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
         let game_over = game_over.clone();
         let paused = paused.clone();
         let started = started.clone();
+        let is_gold = is_gold.clone();
         Callback::from(move |_| {
             snake.set(vec![(10, 10), (10, 11), (10, 12)]);
             direction.set((0, -1));
@@ -170,6 +211,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
             game_over.set(false);
             paused.set(false);
             started.set(true);
+            is_gold.set(false);
             food.set(generate_food_restart());
         })
     };
@@ -280,6 +322,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
         game_over,
         paused,
         started,
+        is_gold,
         leaderboard,
         player_name,
         submitting,
