@@ -1515,7 +1515,7 @@ dependencies = [
 [[package]]
 name = "shared-backend"
 version = "3.0.13"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.16#1bace6c78968973a492718f997cdc71b9ca89a4a"
+source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.17#cc842eaad98f11f669ce103cd9a3e9daad448b41"
 dependencies = [
  "anyhow",
  "axum",
@@ -1535,7 +1535,7 @@ dependencies = [
 [[package]]
 name = "shared-core"
 version = "3.0.13"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.16#1bace6c78968973a492718f997cdc71b9ca89a4a"
+source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.17#cc842eaad98f11f669ce103cd9a3e9daad448b41"
 dependencies = [
  "constant_time_eq",
  "serde",
@@ -1544,7 +1544,7 @@ dependencies = [
 [[package]]
 name = "shared-frontend"
 version = "3.0.13"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.16#1bace6c78968973a492718f997cdc71b9ca89a4a"
+source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.17#cc842eaad98f11f669ce103cd9a3e9daad448b41"
 dependencies = [
  "js-sys",
  "serde",
@@ -2056,7 +2056,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
