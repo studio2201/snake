@@ -93,6 +93,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
         let score = score.clone();
         let high_score = high_score.clone();
         let game_over = game_over.clone();
+        let score_val = *score;
 
         // Helper to generate food
         let generate_food = {
@@ -111,11 +112,13 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
             }
         };
 
-        use_effect_with((is_started, is_paused, is_game_over), move |&(st, ps, go)| {
+        use_effect_with((is_started, is_paused, is_game_over, score_val), move |&(st, ps, go, s)| {
             if !st || ps || go {
                 return Box::new(|| ()) as Box<dyn FnOnce()>;
             }
-            let interval = Interval::new(150, move || {
+            // Dynamic Difficulty: Starts at 170ms, speeds up by 15ms every 20 points, capped at 75ms.
+            let duration = std::cmp::max(75, 170 - (s as i32 / 20) * 15) as u32;
+            let interval = Interval::new(duration, move || {
                 handle_tick(
                     &snake,
                     &dir,
@@ -229,12 +232,31 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
     // Register Keyboard Window Event Listener
     {
         let on_dpad_press = on_dpad_press.clone();
-        use_effect_with((), move |_| {
+        let is_started = *started;
+        let is_game_over = *game_over;
+        let is_paused = *paused;
+        let paused = paused.clone();
+        use_effect_with((is_started, is_game_over, is_paused), move |&(st, go, ps)| {
             let window = web_sys::window().unwrap();
             let on_dpad_press = on_dpad_press.clone();
+            let paused = paused.clone();
             let listener = crate::components::event_listener::EventListener::new(&window, "keydown", move |e: web_sys::Event| {
                 let key_event = e.dyn_ref::<web_sys::KeyboardEvent>().unwrap();
                 let key = key_event.key();
+                
+                // Toggle Pause
+                if key == "Escape" || key == "p" || key == "P" {
+                    if st && !go {
+                        paused.set(!ps);
+                    }
+                    return;
+                }
+
+                // Disallow inputs if paused
+                if ps {
+                    return;
+                }
+
                 let direction = match key.as_str() {
                     "ArrowUp" | "w" | "W" => Some((0, -1)),
                     "ArrowDown" | "s" | "S" => Some((0, 1)),

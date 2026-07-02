@@ -35,7 +35,7 @@ impl App {
 
         Self {
             authenticated: false,
-            app_version: "1.0.14".to_string(),
+            app_version: "1.0.15".to_string(),
             site_title: "Snake".to_string(),
             theme,
             locale_state,
