@@ -7,6 +7,10 @@ html, body {
     color: var(--text);
 }
 
+header {
+    margin-bottom: 0 !important;
+}
+
 main {
     display: flex;
     flex-direction: column;
@@ -105,7 +109,6 @@ main {
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Grid Design */
 .game-grid {
     display: flex;
     flex-direction: column;
@@ -123,18 +126,41 @@ main {
 }
 
 .game-wrapper.playing .game-board-container {
-    padding: 1rem;
+    padding: 1.5rem;
 }
 
 .game-wrapper.playing .score-board {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .game-wrapper.playing .game-grid {
-    width: min(80vw, 50vh);
-    height: min(80vw, 50vh);
+    width: min(80vw, 48vh);
+    height: min(80vw, 48vh);
     max-width: 500px;
     max-height: 500px;
+}
+
+@media (max-width: 1024px) {
+    .game-grid {
+        width: min(80vw, 28vh);
+        height: min(80vw, 28vh);
+    }
+    .game-wrapper.playing .game-grid {
+        width: min(80vw, 35vh);
+        height: min(80vw, 35vh);
+    }
+}
+
+@media (max-width: 768px) {
+    .app-body {
+        padding: 0.75rem !important;
+    }
+    .game-board-container, .game-wrapper.playing .game-board-container {
+        padding: 0.75rem !important;
+    }
+    .mobile-dpad {
+        margin-top: 0.75rem !important;
+    }
 }
 
 .grid-row {
