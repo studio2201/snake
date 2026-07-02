@@ -1,7 +1,13 @@
 # Snake - Traditional Arcade Game
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/unraid-templates/main/icons/snake.png?v=1.0.2" alt="Snake Logo" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/UberMetroid/unraid-templates/main/icons/snake.png?v=1.0.3" alt="Snake Logo" width="128" height="128">
+</p>
+
+<p align="center">
+  <a href="https://www.buymeacoffee.com/ubermetroid" target="_blank"><img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=☕&slug=ubermetroid&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy Me A Coffee" height="36"></a>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <a href="bitcoin:3MbRFvcCJKBCjLDd2JhZcody29H2xHxv6T"><img src="https://img.shields.io/badge/Donate-Bitcoin-orange?logo=bitcoin&style=for-the-badge&logoColor=white" alt="Donate Bitcoin" height="36"></a>
 </p>
 
 Snake is a self-hosted traditional arcade-style snake game application designed for home servers and NAS systems. Built with a high-performance Rust (Axum/Tokio) backend and a WebAssembly (Yew) frontend.
