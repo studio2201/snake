@@ -13,8 +13,7 @@
            C 332,295 300,290 280,295"
         fill="none" stroke="#e05d44" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" />
         
-  <!-- Snake Eye -->
-  <circle cx="210" cy="180" r="8" fill="#ffffff" />
+
   
   <!-- Snake Tongue -->
   <path d="M 332,320 C 352,320 362,310 372,325 M 362,310 C 367,298 375,302 380,295"
