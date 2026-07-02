@@ -314,6 +314,10 @@ button.btn-submit:disabled {
     padding: 1.5rem;
     box-sizing: border-box;
     align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    overflow: hidden;
 }
 
 @media (max-width: 768px) {
@@ -330,12 +334,16 @@ button.btn-submit:disabled {
     letter-spacing: 0.1rem;
     opacity: 0.8;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .leaderboard-list {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .leaderboard-ol {
