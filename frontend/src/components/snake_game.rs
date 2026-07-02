@@ -1,4 +1,3 @@
-use crate::api::LeaderboardEntry;
 use yew::prelude::*;
 
 use super::snake_board::SnakeBoard;
