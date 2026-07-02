@@ -1,8 +1,6 @@
 # Snake - Traditional Arcade Game
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/frontend/Assets/favicon.png?v=1.0.20" alt="Snake Logo" width="128" height="128">
-</p>
+
 
 ## Overview
 
