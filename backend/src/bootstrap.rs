@@ -4,14 +4,14 @@
 //! live. `main.rs` calls exactly one function from this module
 //! (`build_runtime`) and then forwards to the router.
 //!
-//! Tracing-subscriber wiring lives in [`crate::tracing_init`] so this file
-//! can stay focused on the config/state flow.
+//! Tracing-subscriber wiring lives in [`shared_backend::tracing_init`]
+//! so this file can stay focused on the config/state flow.
 
 use crate::config::AppConfig;
 use crate::metrics::Metrics;
 use crate::services::paths::{leaderboard_file, resolve_data_dir, resolve_frontend_dir};
 use crate::state::{AppState, AppStateInner};
-use crate::tracing_init::{LOG_DIR_ENV, default_log_dir, init_tracing, normalise_log_dir};
+use shared_backend::tracing_init::{default_log_dir, init_tracing};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -111,9 +111,7 @@ pub fn build_state(config: AppConfig) -> AppState {
 
 /// Run the full startup sequence and return a [`Runtime`] bundle.
 pub async fn build_runtime() -> Result<Runtime, crate::error::AppError> {
-    let log_dir_raw = std::env::var(LOG_DIR_ENV).ok();
-    let log_dir = normalise_log_dir(log_dir_raw).or_else(default_log_dir);
-    init_tracing(log_dir.as_deref());
+    init_tracing(default_log_dir().as_deref());
 
     load_dotenv();
 

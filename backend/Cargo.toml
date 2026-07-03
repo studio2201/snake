@@ -14,8 +14,8 @@ name = "backend"
 path = "src/main.rs"
 
 [dependencies]
-shared-core = { git = "https://github.com/UberMetroid/shared-assets", tag = "v3.0.17" }
-shared-backend = { git = "https://github.com/UberMetroid/shared-assets", tag = "v3.0.17" }
+shared-core = { git = "https://github.com/UberMetroid/shared-assets", tag = "v3.0.18" }
+shared-backend = { git = "https://github.com/UberMetroid/shared-assets", tag = "v3.0.18" }
 axum = { version = "0.8", features = ["ws", "macros"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }

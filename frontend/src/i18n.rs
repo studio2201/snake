@@ -3,15 +3,17 @@
 //! Three responsibilities:
 //!
 //! 1. Detect the user's preferred locale from `navigator.language`
-//!    ([`detect_browser_locale`]) and persist the choice in `localStorage`
-//!    via [`crate::storage::StorageService`] ([`get_saved_locale`] /
-//!    [`set_saved_locale`]).
+//!    ([`detect_browser_locale`]) and persist the choice in a cookie via
+//!    [`get_saved_locale`] / [`set_saved_locale`] (both re-exported from
+//!    `shared_frontend::locale`).
 //! 2. Expose a Yew context ([`LocaleContext`]) so any component can call
 //!    `ctx.t("score")` without threading the locale code through props.
 //! 3. Dispatch a translation key to the matching language table via
 //!    [`translate`], falling back to the raw key when the table has no entry.
 
 use yew::prelude::*;
+
+pub use shared_frontend::locale::{detect_browser_locale, get_saved_locale, set_saved_locale};
 
 mod de;
 mod en;
@@ -39,51 +41,6 @@ impl LocaleContext {
     pub fn t(&self, key: &str) -> String {
         translate(&self.current, key)
     }
-}
-
-/// Inspects `window.navigator.language` and maps it onto one of the locale
-/// codes supported by this crate. Returns `"en"` when the navigator API is
-/// unavailable or the language is unknown.
-pub fn detect_browser_locale() -> String {
-    if let Some(window) = web_sys::window() {
-        let navigator = window.navigator();
-        if let Some(lang) = navigator.language() {
-            let l = lang.to_lowercase();
-            if l.starts_with("zh") {
-                return "zh".to_string();
-            }
-            if l.starts_with("es") {
-                return "es".to_string();
-            }
-            if l.starts_with("de") {
-                return "de".to_string();
-            }
-            if l.starts_with("ja") {
-                return "ja".to_string();
-            }
-            if l.starts_with("fr") {
-                return "fr".to_string();
-            }
-            if l.starts_with("pt") {
-                return "pt".to_string();
-            }
-            if l.starts_with("ru") {
-                return "ru".to_string();
-            }
-        }
-    }
-    "en".to_string()
-}
-
-/// Reads the saved locale from `localStorage`, falling back to
-/// [`detect_browser_locale`] when nothing has been persisted yet.
-pub fn get_saved_locale() -> String {
-    crate::storage::StorageService::get_item("lang", &detect_browser_locale())
-}
-
-/// Persists the user's locale choice in `localStorage`.
-pub fn set_saved_locale(locale: &str) {
-    crate::storage::StorageService::set_item("lang", locale);
 }
 
 /// Looks up a translation key in the appropriate language table.

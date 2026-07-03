@@ -14,7 +14,8 @@ impl App {
     /// probes (`/api/config` and `/api/pin-required`).
     pub fn create_app(ctx: &Context<Self>) -> Self {
         let theme = StorageService::get_theme();
-        let locale_state = crate::i18n::get_saved_locale();
+        let locale_state =
+            crate::i18n::get_saved_locale().unwrap_or_else(crate::i18n::detect_browser_locale);
 
         // Apply the persisted theme to the <html> element so the CSS
         // variables resolve before the first paint.

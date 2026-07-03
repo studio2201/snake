@@ -8,7 +8,8 @@
 //!
 //! ## Layout
 //!
-//! - [`bootstrap`] — tracing init, env-driven config, state construction
+//! - [`bootstrap`] — tracing init (delegated to
+//!   [`shared_backend::tracing_init`]), env-driven config, state construction
 //! - [`router`] — single `build_router(state) -> Router` factory
 //! - [`state`] — `AppState` + per-IP request-budget helpers
 //! - [`config`] — `AppConfig` (wraps `shared_backend::ServerConfig`)
@@ -26,7 +27,6 @@ pub mod router;
 pub mod routes;
 pub mod services;
 pub mod state;
-pub mod tracing_init;
 
 pub use config::AppConfig;
 pub use error::AppError;
