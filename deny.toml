@@ -8,11 +8,19 @@ all-features = false
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "warn"
-# Snake retains `time = "0.3"` only for `time::Duration` in cookie-lifetime
-# arithmetic. The full RUSTSEC-2024-0370 advisory covers date formatting /
-# parsing macros; Snake does not enable those features. Pin until upstream
-# ships a maintained successor.
-ignore = ["RUSTSEC-2024-0370"]
+# Two unmaintained-deps exceptions, both unavoidable transitively:
+#
+# RUSTSEC-2024-0370: Snake retains `time = "0.3"` only for `time::Duration`
+#   in cookie-lifetime arithmetic. The full advisory covers date formatting /
+#   parsing macros; Snake does not enable those features. Pin until upstream
+#   ships a maintained successor.
+#
+# RUSTSEC-2025-0141: `bincode` v1.x is pulled in transitively by the Yew
+#   → gloo → gloo-worker chain. Snake uses the `yew::csr` feature only
+#   (no worker), and never invokes bincode directly. Maintainer-side fix is
+#   out of scope — track upstream Yew for a bincode-free release, or
+#   vendored-replace once `yew#csr` stops depending on `gloo-worker`.
+ignore = ["RUSTSEC-2024-0370", "RUSTSEC-2025-0141"]
 
 [licenses]
 allow = [
