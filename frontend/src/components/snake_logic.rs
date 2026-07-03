@@ -145,34 +145,21 @@ fn persist_high_score(high_score: u32) {
 /// Kept as a thin adapter so the bulk of the logic stays testable.
 #[allow(clippy::too_many_arguments)]
 pub fn handle_tick(
+    inputs: PureTickInputs,
     snake: &UseStateHandle<Vec<Pos>>,
     dir: &UseStateHandle<Pos>,
-    next_dir: &UseStateHandle<Pos>,
     food: &UseStateHandle<Pos>,
     score: &UseStateHandle<u32>,
     high_score: &UseStateHandle<u32>,
     game_over: &UseStateHandle<bool>,
     is_gold: &UseStateHandle<bool>,
-    grid_size: i32,
     generate_food: &impl Fn() -> Pos,
 ) {
     let gold_roll = js_sys::Math::random();
     let next_food = generate_food();
-    let result = apply_tick(
-        PureTickInputs {
-            snake: (**snake).clone(),
-            direction: **dir,
-            next_direction: **next_dir,
-            food: **food,
-            score: **score,
-            high_score: **high_score,
-            game_over: **game_over,
-            is_gold: **is_gold,
-            grid_size,
-        },
-        gold_roll,
-        next_food,
-    );
+    let high_score_val = inputs.high_score;
+    let is_gold_val = inputs.is_gold;
+    let result = apply_tick(inputs, gold_roll, next_food);
 
     dir.set(result.direction);
     if result.game_over {
@@ -182,11 +169,11 @@ pub fn handle_tick(
     snake.set(result.snake);
     food.set(result.food);
     score.set(result.score);
-    if result.high_score != **high_score {
+    if result.high_score != high_score_val {
         high_score.set(result.high_score);
         persist_high_score(result.high_score);
     }
-    if result.is_gold != **is_gold {
+    if result.is_gold != is_gold_val {
         is_gold.set(result.is_gold);
     }
 }

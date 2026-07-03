@@ -9,7 +9,7 @@
 use gloo_timers::callback::Interval;
 use yew::prelude::*;
 
-use super::super::snake_logic::{Pos, handle_tick};
+use super::super::snake_logic::{Pos, handle_tick, PureTickInputs};
 use super::food::{GRID_SIZE, generate_food};
 
 /// Tick interval floor. Even at high scores the snake never moves faster
@@ -57,7 +57,8 @@ pub struct TickInputs {
 }
 
 /// Installs the recurring tick effect described in the module docs.
-pub fn install_tick_loop(inputs: TickInputs) {
+#[hook]
+pub fn use_tick_loop(inputs: TickInputs) {
     let TickInputs {
         started,
         paused,
@@ -71,18 +72,46 @@ pub fn install_tick_loop(inputs: TickInputs) {
         is_gold,
     } = inputs;
 
+    // Create a mutable reference cell to store the latest state values across ticks
+    let state_ref = use_mut_ref(|| PureTickInputs {
+        snake: (*snake).clone(),
+        direction: *direction,
+        next_direction: *next_direction,
+        food: *food,
+        score: *score,
+        high_score: *high_score,
+        game_over: *game_over,
+        is_gold: *is_gold,
+        grid_size: GRID_SIZE,
+    });
+
+    // Update the ref on every render to ensure the tick loop always sees current state
+    {
+        let mut m = state_ref.borrow_mut();
+        m.snake = (*snake).clone();
+        m.direction = *direction;
+        m.next_direction = *next_direction;
+        m.food = *food;
+        m.score = *score;
+        m.high_score = *high_score;
+        m.game_over = *game_over;
+        m.is_gold = *is_gold;
+    }
+
     let is_started = *started;
     let is_paused = *paused;
     let is_game_over = *game_over;
     let score_val = *score;
-    let next_dir = next_direction.clone();
-    let dir = direction.clone();
-    let snake = snake.clone();
-    let food = food.clone();
-    let score = score.clone();
-    let high_score = high_score.clone();
-    let game_over = game_over.clone();
-    let is_gold = is_gold.clone();
+
+    let snake_handle = snake.clone();
+    let dir_handle = direction.clone();
+    let food_handle = food.clone();
+    let score_handle = score.clone();
+    let high_score_handle = high_score.clone();
+    let game_over_handle = game_over.clone();
+    let is_gold_handle = is_gold.clone();
+
+    let state_ref_for_tick = state_ref.clone();
 
     use_effect_with(
         (is_started, is_paused, is_game_over, score_val),
@@ -94,26 +123,43 @@ pub fn install_tick_loop(inputs: TickInputs) {
                 MIN_TICK_MS,
                 BASE_TICK_MS - (s / SCORE_PER_SPEEDUP) * SPEEDUP_STEP_MS,
             );
-            let snake = snake.clone();
-            let food = food.clone();
-            let dir = dir.clone();
-            let next_dir = next_dir.clone();
-            let score = score.clone();
-            let high_score = high_score.clone();
-            let game_over = game_over.clone();
-            let is_gold = is_gold.clone();
+
+            let snake_handle = snake_handle.clone();
+            let dir_handle = dir_handle.clone();
+            let food_handle = food_handle.clone();
+            let score_handle = score_handle.clone();
+            let high_score_handle = high_score_handle.clone();
+            let game_over_handle = game_over_handle.clone();
+            let is_gold_handle = is_gold_handle.clone();
+            let state_ref = state_ref_for_tick.clone();
+
             let interval = Interval::new(duration, move || {
+                let pure_inputs = {
+                    let m = state_ref.borrow();
+                    PureTickInputs {
+                        snake: m.snake.clone(),
+                        direction: m.direction,
+                        next_direction: m.next_direction,
+                        food: m.food,
+                        score: m.score,
+                        high_score: m.high_score,
+                        game_over: m.game_over,
+                        is_gold: m.is_gold,
+                        grid_size: GRID_SIZE,
+                    }
+                };
+
+                let snake_for_food = pure_inputs.snake.clone();
                 handle_tick(
-                    &snake,
-                    &dir,
-                    &next_dir,
-                    &food,
-                    &score,
-                    &high_score,
-                    &game_over,
-                    &is_gold,
-                    GRID_SIZE,
-                    &|| generate_food(&snake),
+                    pure_inputs,
+                    &snake_handle,
+                    &dir_handle,
+                    &food_handle,
+                    &score_handle,
+                    &high_score_handle,
+                    &game_over_handle,
+                    &is_gold_handle,
+                    &move || generate_food(&snake_for_food),
                 );
             });
             Box::new(move || drop(interval))

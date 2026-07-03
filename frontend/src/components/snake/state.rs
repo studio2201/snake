@@ -18,7 +18,7 @@ use super::actions::{
 };
 use super::food::{install_gold_timeout, load_high_score};
 use super::keys::install_keyboard_listener;
-use super::tick::{TickInputs, install_tick_loop};
+use super::tick::{TickInputs, use_tick_loop};
 
 /// Bundle returned by [`use_snake_state`].
 pub struct SnakeState {
@@ -93,7 +93,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
     }
 
     install_gold_timeout(&is_gold, &food, &snake);
-    install_tick_loop(TickInputs {
+    use_tick_loop(TickInputs {
         started: started.clone(),
         paused: paused.clone(),
         game_over: game_over.clone(),
