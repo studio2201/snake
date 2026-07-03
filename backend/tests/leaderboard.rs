@@ -6,7 +6,7 @@ use axum::body::Body;
 use axum::http::{Request, StatusCode};
 use serde_json::json;
 
-use common::{build_test_app, get, json_post, send, with_connect_info};
+use common::{build_test_app, get, send, with_connect_info};
 
 #[tokio::test]
 async fn leaderboard_get_returns_empty_when_no_file() {
@@ -25,11 +25,16 @@ async fn leaderboard_post_persists_and_get_returns_same() {
         "score": 100,
         "date": "2026-01-01T00:00:00Z",
     });
-    let (status, body, _) = send(
-        &router,
-        with_connect_info(json_post("/api/leaderboard", entry)),
-    )
-    .await;
+    // `Origin` matches the default `base_url` (`http://localhost:4401`)
+    // so the CSRF middleware on `/api/leaderboard` accepts the submission.
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/leaderboard")
+        .header("content-type", "application/json")
+        .header("origin", "http://localhost:4401")
+        .body(Body::from(entry.to_string()))
+        .expect("req");
+    let (status, body, _) = send(&router, with_connect_info(req)).await;
     assert_eq!(status, StatusCode::OK);
     let arr = body.as_array().expect("array");
     assert_eq!(arr.len(), 1);
@@ -49,11 +54,14 @@ async fn leaderboard_post_truncates_25_emoji_name_to_15() {
     let (_tmp, _state, router) = build_test_app(None).await;
     let emoji = "😀".repeat(25);
     let entry = json!({ "name": emoji, "score": 5, "date": "2026-01-01T00:00:00Z" });
-    let (_, body, _) = send(
-        &router,
-        with_connect_info(json_post("/api/leaderboard", entry)),
-    )
-    .await;
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/leaderboard")
+        .header("content-type", "application/json")
+        .header("origin", "http://localhost:4401")
+        .body(Body::from(entry.to_string()))
+        .expect("req");
+    let (_, body, _) = send(&router, with_connect_info(req)).await;
     let arr = body.as_array().expect("array");
     assert_eq!(arr.len(), 1);
     let stored = arr[0]["name"].as_str().expect("str");

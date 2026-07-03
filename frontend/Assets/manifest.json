@@ -6,9 +6,14 @@
     { "sizes": "192x192", "src": "favicon.png", "type": "image/png" },
     { "sizes": "512x512", "src": "favicon.png", "type": "image/png" }
   ],
+  "lang": "en",
+  "dir": "ltr",
   "name": "Snake",
   "orientation": "any",
+  "prefer_related_applications": false,
   "short_name": "Snake",
   "start_url": "/",
-  "theme_color": "#000000"
+  "theme_color": "#000000",
+  "categories": ["games", "entertainment"],
+  "screenshots": []
 }

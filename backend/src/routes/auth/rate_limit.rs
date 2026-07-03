@@ -30,6 +30,7 @@ pub async fn rate_limit_middleware(
             client_ip = %ip_key,
             "request budget exhausted"
         );
+        state.metrics.inc_rate_limited();
         let body = serde_json::json!({
             "error": "Too many requests. Please slow down."
         });

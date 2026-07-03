@@ -11,7 +11,7 @@ use axum::http::{Request, StatusCode};
 use serde_json::json;
 use tower::ServiceExt;
 
-use common::{build_test_app, get, json_post, send, with_connect_info};
+use common::{build_test_app, get, send, with_connect_info};
 
 /// Variant of `send` that returns the raw response body bytes so we can
 /// assert on non-JSON content (HTML / JS).
@@ -98,6 +98,7 @@ async fn leaderboard_post_rejects_unknown_session_cookie() {
         .uri("/api/leaderboard")
         .header("content-type", "application/json")
         .header("cookie", "SNAKE_PIN=some-unknown-token")
+        .header("origin", "http://localhost:4401")
         .body(Body::from(
             json!({ "name": "x", "score": 1, "date": "2026-01-01T00:00:00Z" }).to_string(),
         ))
@@ -114,6 +115,7 @@ async fn leaderboard_post_returns_400_on_malformed_json() {
         .method("POST")
         .uri("/api/leaderboard")
         .header("content-type", "application/json")
+        .header("origin", "http://localhost:4401")
         .body(Body::from(r#"{"name": "not closed"#))
         .expect("req");
     let (status, _body, _) = send(&router, with_connect_info(req)).await;
@@ -123,10 +125,15 @@ async fn leaderboard_post_returns_400_on_malformed_json() {
 #[tokio::test]
 async fn leaderboard_post_returns_422_when_name_missing() {
     let (_tmp, _state, router) = build_test_app(None).await;
-    let req = json_post(
-        "/api/leaderboard",
-        json!({ "score": 100, "date": "2026-01-01T00:00:00Z" }),
-    );
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/leaderboard")
+        .header("content-type", "application/json")
+        .header("origin", "http://localhost:4401")
+        .body(Body::from(
+            json!({ "score": 100, "date": "2026-01-01T00:00:00Z" }).to_string(),
+        ))
+        .expect("req");
     let (status, _body, _) = send(&router, with_connect_info(req)).await;
     assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY);
 }
@@ -167,6 +174,8 @@ async fn leaderboard_concurrent_submissions_do_not_lose_data() {
 
     // Fire 10 POSTs concurrently; the leaderboard serialises them via
     // the per-state mutex, so every entry must land in the final read.
+    // Each request carries `Origin: http://localhost:4401` so the CSRF
+    // middleware on `/api/leaderboard` accepts the submission.
     let mut handles = Vec::new();
     for i in 0..10 {
         let router = router.clone();
@@ -176,7 +185,15 @@ async fn leaderboard_concurrent_submissions_do_not_lose_data() {
                 "score": i as u32,
                 "date": "2026-01-01T00:00:00Z",
             });
-            let req = with_connect_info(json_post("/api/leaderboard", entry));
+            let req = with_connect_info(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/leaderboard")
+                    .header("content-type", "application/json")
+                    .header("origin", "http://localhost:4401")
+                    .body(Body::from(entry.to_string()))
+                    .expect("req"),
+            );
             send(&router, req).await.0
         }));
     }

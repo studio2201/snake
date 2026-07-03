@@ -110,6 +110,56 @@ nix profile install github:UberMetroid/snake --impure
 
 ---
 
+## Production Deployment
+
+Snake assumes TLS termination happens at a reverse proxy. The cookie's `Secure` flag is set when either:
+1. The request's `x-forwarded-proto` header equals `https` (case-insensitive)
+2. The `BASE_URL` config starts with `https://`
+
+### nginx example
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name snake.example.com;
+
+    ssl_certificate     /etc/ssl/certs/snake.crt;
+    ssl_certificate_key /etc/ssl/private/snake.key;
+
+    location / {
+        proxy_pass http://127.0.0.1:4501;
+        proxy_set_header X-Forwarded-Proto  $scheme;
+        proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+        proxy_set_header Host                $host;
+        proxy_http_version 1.1;
+        proxy_set_header Connection         "";
+    }
+}
+```
+
+### caddy example
+
+```caddyfile
+snake.example.com {
+    reverse_proxy 127.0.0.1:4501 {
+        header_up X-Forwarded-Proto {scheme}
+    }
+}
+```
+
+### Required env
+
+When fronting with a reverse proxy, ensure:
+- `BASE_URL` matches the public-facing URL (e.g., `https://snake.example.com`)
+- `TRUST_PROXY=true` so the `x-forwarded-for` chain is honoured for rate limiting and PIN lockout (otherwise every request looks like it came from `127.0.0.1` and the lockout becomes global)
+- `ALLOWED_ORIGINS` lists the public URL; leaving it at the default `*` is acceptable because auth cookies are `SameSite=Strict`
+
+### Service-worker and HTTPS
+
+Service workers only register on `https://` (or `http://localhost`). Operators behind a non-HTTPS reverse proxy will see no PWA install prompt and no offline cache; the game still works as a regular web app.
+
+---
+
 ## Configuration Options
 
 Configure these settings inside your Docker Compose environment or container environment variables:

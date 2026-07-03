@@ -14,6 +14,7 @@ use tokio::fs;
 use tokio::sync::{Mutex, RwLock};
 
 pub use crate::config::AppConfig;
+use crate::metrics::Metrics;
 use crate::services::rate_limit::RateLimiter;
 
 /// Process-global state shared by every request handler.
@@ -35,6 +36,9 @@ pub struct AppStateInner {
     /// race. The lock is held only across the (small) in-memory operation
     /// and the atomic write to disk; it does NOT span the disk read.
     pub leaderboard_lock: Arc<Mutex<()>>,
+    /// Process-wide Prometheus counters. Cheap to clone (bag of atomics),
+    /// so middleware/handlers can borrow without `Arc` ceremony.
+    pub metrics: Arc<Metrics>,
 }
 
 /// Cheap-to-clone handle for [`AppStateInner`].
@@ -114,6 +118,7 @@ mod tests {
             active_sessions: RwLock::new(HashSet::new()),
             rate_limiter: RwLock::new(RateLimiter::new()),
             leaderboard_lock: Arc::new(Mutex::new(())),
+            metrics: Arc::new(Metrics::new("test", 0, 0)),
         })
     }
 

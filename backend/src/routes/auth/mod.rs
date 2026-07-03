@@ -4,6 +4,7 @@
 //!
 //! - [`cookie`] — build the authentication `Set-Cookie` value
 //! - [`logout`] — `POST /api/logout`
+//! - [`origin_check`] — CSRF defense middleware on state-changing endpoints
 //! - [`pin_required`] — `GET /api/pin-required` and `GET /api/config`
 //! - [`verify_pin`] — `POST /api/verify-pin`
 //! - [`rate_limit`] — request-budget middleware
@@ -11,6 +12,7 @@
 
 pub mod cookie;
 pub mod logout;
+pub mod origin_check;
 pub mod pin_required;
 pub mod rate_limit;
 pub mod require_pin;
@@ -18,6 +20,7 @@ pub mod verify_pin;
 
 pub use cookie::build_auth_cookie;
 pub use logout::logout;
+pub use origin_check::origin_check_middleware;
 pub use pin_required::{get_config, pin_required};
 pub use rate_limit::rate_limit_middleware;
 pub use require_pin::require_pin;
@@ -83,6 +86,7 @@ mod tests {
             active_sessions: RwLock::new(HashSet::new()),
             rate_limiter: RwLock::new(RateLimiter::new()),
             leaderboard_lock: Arc::new(Mutex::new(())),
+            metrics: Arc::new(crate::metrics::Metrics::new("test", 0, 0)),
         })
     }
 

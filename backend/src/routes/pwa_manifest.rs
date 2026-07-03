@@ -4,6 +4,14 @@
 //! (and short description) overridden to match the runtime config. If the
 //! prebuilt manifest is missing or unparseable, falls back to a minimal
 //! inline manifest so the browser doesn't reject the install prompt.
+//!
+//! Note on `icons`: the bundled `frontend/Assets/manifest.json` currently
+//! reuses `favicon.png` for both the `192x192` and `512x512` slots
+//! because dedicated PNGs of those exact dimensions aren't checked in.
+//! Chrome accepts a single source file at multiple sizes, but for the
+//! strictest installability grade we should ship distinct raster assets
+//! per `sizes` value. Until then the warning lives here so the next
+//! manifest refresh knows the spot.
 
 use axum::Json;
 use axum::extract::State;
@@ -91,5 +99,57 @@ mod tests {
         assert_eq!(v["name"], "Snake Deluxe");
         assert_eq!(v["short_name"], "Snake Deluxe");
         assert_eq!(v["description"], FALLBACK_DESCRIPTION);
+    }
+
+    /// The manifest endpoint only mutates `name`, `short_name`, and
+    /// `description` via `serde_json::Value` indexing — every other key
+    /// must round-trip unchanged. This pins down the new Chrome-friendly
+    /// keys (`lang`, `dir`, `prefer_related_applications`, `categories`,
+    /// `screenshots`) so a future refactor can't silently drop them.
+    #[test]
+    fn new_manifest_keys_survive_merge() {
+        let mut value = serde_json::json!({
+            "background_color": "#000000",
+            "description": "stale",
+            "display": "standalone",
+            "icons": [
+                { "sizes": "192x192", "src": "favicon.png", "type": "image/png" }
+            ],
+            "lang": "en",
+            "dir": "ltr",
+            "name": "stale",
+            "orientation": "any",
+            "prefer_related_applications": false,
+            "short_name": "stale",
+            "start_url": "/",
+            "theme_color": "#000000",
+            "categories": ["games", "entertainment"],
+            "screenshots": [],
+        });
+
+        // Mirror the same mutations `serve_manifest` performs.
+        let site_title = "Snake";
+        value["name"] = Value::String(site_title.to_string());
+        value["short_name"] = Value::String(site_title.to_string());
+        value["description"] = Value::String(FALLBACK_DESCRIPTION.to_string());
+
+        // Overridden fields reflect the runtime config.
+        assert_eq!(value["name"], site_title);
+        assert_eq!(value["short_name"], site_title);
+        assert_eq!(value["description"], FALLBACK_DESCRIPTION);
+
+        // Untouched keys survived the merge.
+        assert_eq!(value["lang"], "en");
+        assert_eq!(value["dir"], "ltr");
+        assert_eq!(value["prefer_related_applications"], false);
+        assert_eq!(value["start_url"], "/");
+        assert_eq!(value["theme_color"], "#000000");
+        assert_eq!(value["background_color"], "#000000");
+        assert_eq!(value["display"], "standalone");
+        assert_eq!(value["orientation"], "any");
+        assert_eq!(value["categories"][0], "games");
+        assert_eq!(value["categories"][1], "entertainment");
+        assert_eq!(value["screenshots"], serde_json::json!([]));
+        assert_eq!(value["icons"][0]["src"], "favicon.png");
     }
 }

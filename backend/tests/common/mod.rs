@@ -44,6 +44,7 @@ pub fn make_state(pin: Option<&str>, data_dir: &Path, web_root: &Path) -> AppSta
         active_sessions: RwLock::new(HashSet::new()),
         rate_limiter: RwLock::new(RateLimiter::new()),
         leaderboard_lock: Arc::new(Mutex::new(())),
+        metrics: Arc::new(backend::metrics::Metrics::new("test", 0, 0)),
     })
 }
 

@@ -120,6 +120,13 @@ pub async fn get_leaderboard(State(state): State<AppState>) -> Response {
     (StatusCode::OK, Json(list)).into_response()
 }
 
+/// Read the leaderboard from disk and return the entry count. Used by
+/// the `/metrics` endpoint to refresh the `snake_leaderboard_entries`
+/// gauge without holding the leaderboard mutex.
+pub async fn read_leaderboard_count(state: &AppState) -> u64 {
+    read_leaderboard(&state.leaderboard_file).await.len() as u64
+}
+
 /// `POST /api/leaderboard` — accept a new entry, sanitise it, sort, truncate,
 /// and persist.
 ///

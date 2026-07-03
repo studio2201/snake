@@ -8,6 +8,7 @@
 //! can stay focused on the config/state flow.
 
 use crate::config::AppConfig;
+use crate::metrics::Metrics;
 use crate::services::paths::{leaderboard_file, resolve_data_dir, resolve_frontend_dir};
 use crate::state::{AppState, AppStateInner};
 use crate::tracing_init::{LOG_DIR_ENV, default_log_dir, init_tracing, normalise_log_dir};
@@ -65,6 +66,10 @@ pub fn build_state(config: AppConfig) -> AppState {
     let web_root = resolve_frontend_dir();
     let leaderboard_file = leaderboard_file(&data_dir);
 
+    // Initialise metrics with empty counters; gauges get refreshed on
+    // every `/metrics` scrape, so seeding them with zero here is fine.
+    let metrics = Arc::new(Metrics::new(config.version.clone(), 0, 0));
+
     let state: AppState = Arc::new(AppStateInner {
         config,
         data_dir: data_dir.clone(),
@@ -73,6 +78,7 @@ pub fn build_state(config: AppConfig) -> AppState {
         active_sessions: RwLock::new(std::collections::HashSet::new()),
         rate_limiter: RwLock::new(crate::services::rate_limit::RateLimiter::new()),
         leaderboard_lock: Arc::new(Mutex::new(())),
+        metrics,
     });
 
     let cleanup_state = state.clone();
