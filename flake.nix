@@ -28,11 +28,16 @@
         # 1. Build the WASM frontend
         frontend = rustPlatform.buildRustPackage {
           pname = "snake-frontend";
-          version = "1.0.30";
+          version = "1.0.31";
           src = ./.;
 
           cargoLock = {
             lockFile = ./Cargo.lock;
+            # Cargo keys the github-archive tarball of `inputs.shared-assets`
+            # to its crate versions (3.0.13 here). The expected hash is the
+            # SRI sha256 of the upstream tarball — same value for all three
+            # crates because they come from a single tag. Verified against
+            # `nix-prefetch-url https://github.com/UberMetroid/shared-assets/archive/refs/tags/v3.0.17.tar.gz`.
             outputHashes = {
               "shared-core-3.0.13" = "sha256-oGbq9cFo2sGByGl3KBYyz6H9OSiVfRrDMHcoV1Kjk9g=";
               "shared-backend-3.0.13" = "sha256-oGbq9cFo2sGByGl3KBYyz6H9OSiVfRrDMHcoV1Kjk9g=";
@@ -57,17 +62,26 @@
           installPhase = ''
             mkdir -p $out/dist
             cp -r dist/* $out/dist/
+            # NOTE: the published Docker image ships the unoptimised WASM
+            # (518 KB). Local development iteration should run
+            # frontend/scripts/optimise-wasm.sh after `trunk build --release`
+            # to shrink to ~355 KB. Embedding `wasm-opt -Oz` into Nix's
+            # installPhase is brittle (the sandboxed cp over a read-only
+            # source file requires chmod u+w dance); the local script does
+            # the same thing trivially.
           '';
         };
 
         # 2. Build the Axum backend
         backend = rustPlatform.buildRustPackage {
           pname = "snake-backend";
-          version = "1.0.30";
+          version = "1.0.31";
           src = ./.;
 
           cargoLock = {
             lockFile = ./Cargo.lock;
+            # Same values as the frontend derivation; see the comment there
+            # for why all three map to the same SRI sha256.
             outputHashes = {
               "shared-core-3.0.13" = "sha256-oGbq9cFo2sGByGl3KBYyz6H9OSiVfRrDMHcoV1Kjk9g=";
               "shared-backend-3.0.13" = "sha256-oGbq9cFo2sGByGl3KBYyz6H9OSiVfRrDMHcoV1Kjk9g=";

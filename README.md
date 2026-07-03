@@ -3,7 +3,7 @@
 [![CI](https://github.com/UberMetroid/snake/actions/workflows/ci.yml/badge.svg)](https://github.com/UberMetroid/snake/actions/workflows/ci.yml)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.30" alt="Snake Logo" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.31" alt="Snake Logo" width="128" height="128">
 </p>
 
 ## Overview
@@ -65,6 +65,16 @@ docker compose up -d
 ```
 
 3. Open your browser and navigate to `http://localhost:4501`.
+
+### Local Development (Trunk)
+
+For frontend iteration outside Nix:
+
+```bash
+cd frontend
+trunk build --release                  # 520 KB WASM
+./scripts/optimise-wasm.sh             # 355 KB WASM (-32% raw, -19% gzipped)
+```
 
 ### Building the Image Locally
 

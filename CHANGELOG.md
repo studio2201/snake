@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.31] - 2026-07-02
+
+### Added
+- Frontend `<meta http-equiv="Content-Security-Policy">` tag in `frontend/index.html` for defence-in-depth (the backend already sets CSP via response headers; the meta fires only if served without headers, e.g. `file://`).
+- `frontend/scripts/optimise-wasm.sh`: a post-`trunk build --release` hook that runs `wasm-opt -Oz --strip-debug --strip-producers`. Reduces the WASM bundle from 520 KB → 355 KB (-32% raw, -19% gzipped over the wire).
+- README dev instructions document the local wasm-opt step.
+
+### Changed
+- `service-worker.js` rewritten for Snake (was carrying fork leftovers for a notepad app: `LOG_CACHE_*` names, references to non-existent `/js/marked/*` and `/js/@highlightjs/*` packages, `config.highlightLanguages` field lookup that returned `undefined`).
+- `super_metroid_theme` cookie name replaced by `snake_theme` everywhere (in `frontend/index.html` flicker script and `frontend/src/storage.rs`).
+- Favicon cache-bust query string `?v=1.0.18` → `?v=1.0.30` in `frontend/index.html`.
+- Brand-name literal consolidated to `pub const APP_BRAND: &str = "Snake"` in `backend/src/config.rs` (replaces 4 hardcoded `"Snake"` strings).
+
+### Notes
+- The published Docker image still ships the unoptimised 518 KB WASM. Embedding `wasm-opt -Oz` into Nix's `installPhase` ran into read-only-file permission issues that required a `chmod u+w` dance during the chroot-build, and the local script handles the same operation trivially. Run `frontend/scripts/optimise-wasm.sh` after `trunk build --release` for the locally-developed bundle.
+
 ## [1.0.27] - 2026-07-02
 
 ### Added
