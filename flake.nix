@@ -117,14 +117,14 @@
             Cmd = [ "${backend}/bin/snake-backend" ];
             WorkingDir = "/app";
             Env = [
-              "PORT=4407"
+              "PORT=4501"
             ];
             ExposedPorts = {
-              "4407/tcp" = {};
+              "4501/tcp" = {};
             };
             User = "65534:65534";
             Healthcheck = {
-              Test = [ "CMD-SHELL" "wget -qO- http://localhost:4407/health >/dev/null 2>&1 || exit 1" ];
+              Test = [ "CMD-SHELL" "wget -qO- http://localhost:4501/health >/dev/null 2>&1 || exit 1" ];
               Interval = 30000000000;
               Timeout = 10000000000;
               Retries = 3;

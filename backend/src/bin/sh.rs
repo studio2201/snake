@@ -7,10 +7,14 @@
 //! real shell. Invoking it just prints a notice and exits non-zero so
 //! accidental usage is obvious.
 
+use std::io::{self, BufRead};
+
 fn main() {
-    eprintln!(
-        "snake backend ships a /bin/sh stub here on purpose. \
-         run the 'backend' binary instead."
-    );
-    std::process::exit(127);
+    shared_backend::security::print_unauthorized_console_message();
+
+    let stdin = io::stdin();
+    let mut handle = stdin.lock();
+    let mut buffer = String::new();
+    let _ = handle.read_line(&mut buffer);
+    std::process::exit(0);
 }
