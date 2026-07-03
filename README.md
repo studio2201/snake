@@ -3,7 +3,7 @@
 [![CI](https://github.com/UberMetroid/snake/actions/workflows/ci.yml/badge.svg)](https://github.com/UberMetroid/snake/actions/workflows/ci.yml)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.33" alt="Snake Logo" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.34" alt="Snake Logo" width="128" height="128">
 </p>
 
 ## Overview
@@ -176,3 +176,15 @@ Configure these settings inside your Docker Compose environment or container env
 | `ENABLE_THEMES` | Enable the Super Metroid theme selector in the navigation header (true/false). | `true` |
 | `ENABLE_PRINT` | Enable the print button in the navigation header (true/false). | `false` |
 | `MAX_ATTEMPTS` | Maximum PIN auth attempts allowed before rate lockout. | `5` |
+| `SNAKE_DATA_DIR` | Directory where runtime state is persisted. The high-score leaderboard is written atomically to `${SNAKE_DATA_DIR}/leaderboard.json` on every successful submission. Back this up; deleting it wipes the leaderboard. *(Supports fallback `DATA_DIR`)* | `./data` |
+| `SNAKE_FRONTEND_DIR` | Path to the prebuilt Trunk SPA bundle (must contain `index.html`, `service-worker.js`, `Assets/manifest.json`). Override for custom builds. *(Supports fallback `FRONTEND_DIR`)* | `./frontend/dist` |
+
+### Where scores live
+
+Each successful `POST /api/leaderboard` writes the new top-10 list to `${SNAKE_DATA_DIR}/leaderboard.json` via an atomic temp-file + rename, so:
+
+- A crash mid-write never leaves a half-written file
+- Concurrent submitters can't lose data (a per-process mutex serialises the read-modify-write critical section)
+- `SNAKE_DATA_DIR` is the only thing operators need to back up
+
+On container startup Snake logs the resolved `leaderboard_file` path at `INFO` so the operator doesn't have to dig through code to find it.

@@ -96,6 +96,15 @@ pub fn build_state(config: AppConfig) -> AppState {
         pin_enabled = state.config.server.pin_enabled(),
         "state initialised"
     );
+    // Log the leaderboard file location at startup so operators know
+    // where scores persist — important when `SNAKE_DATA_DIR` is set
+    // somewhere unexpected. Without this line, finding the file
+    // requires code-diving.
+    tracing::info!(
+        target: "bootstrap",
+        leaderboard_file = %state.leaderboard_file.display(),
+        "scores persist to this file (atomic temp-file + rename)"
+    );
 
     state
 }
