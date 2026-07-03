@@ -1,197 +1,169 @@
-let APP_VERSION = "1.0.0"; // Default version, will be updated by server
+let APP_VERSION = "1.0.0";
 
-const getCacheName = (version) => `LOG_CACHE_${version}`;
+const CACHE_PREFIX = "SNAKE_CACHE_";
+const PWA_PREFIX = "SNAKE_PWA_CACHE_";
 
-const getConfig = async () => {
+const SHELL_FILES = [
+  "/",
+  "/index.html",
+  "/service-worker.js",
+  "/manifest.json",
+  "/favicon.png",
+  "/favicon.svg",
+];
+
+const isManagedCache = (name) =>
+  typeof name === "string" &&
+  (name.startsWith(CACHE_PREFIX) || name.startsWith(PWA_PREFIX));
+
+const cachePrefixLen = (name) => {
+  if (name.startsWith(CACHE_PREFIX)) return CACHE_PREFIX.length;
+  if (name.startsWith(PWA_PREFIX)) return PWA_PREFIX.length;
+  return -1;
+};
+
+const safeJson = async (response) => {
   try {
-    const response = await fetch("/api/config");
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Failed to fetch config:", error);
-    return null; // Fallback to default version
+    return await response.json();
+  } catch (_) {
+    return null;
   }
-}
+};
+
+const fetchConfig = async () => {
+  try {
+    const res = await fetch("/api/config", { cache: "no-store" });
+    if (!res.ok) return null;
+    return await safeJson(res);
+  } catch (err) {
+    console.error("Snake SW /api/config fetch failed:", err);
+    return null;
+  }
+};
 
 const getAppVersion = async () => {
-  try {
-    const data = await getConfig();
-    if (!data || !data.version) {
-      console.warn("No version found in config, using default version:", APP_VERSION);
-      return APP_VERSION; // Fallback to default version
-    }
-    APP_VERSION = data.version; // Update global version variable
-    console.log("App version fetched from config:", APP_VERSION);
-    return data.version;
-  } catch (error) {
-    console.error("Failed to fetch app version:", error);
-    return "1.0.0"; // Fallback version
+  const cfg = await fetchConfig();
+  if (cfg && typeof cfg.version === "string" && cfg.version.length > 0) {
+    APP_VERSION = cfg.version;
   }
+  console.log(`Snake SW app version: ${APP_VERSION}`);
+  return APP_VERSION;
 };
 
 const getCurrentCacheVersion = async () => {
-  const cacheNames = await caches.keys();
-  const logCaches = cacheNames.filter(name => 
-    name.startsWith('LOG_CACHE_') || 
-    name.startsWith('LOG_PWA_CACHE')
-  );
-  
-  if (logCaches.length === 0) {
-    return null; // No cache exists
-  }
-  
-  // Extract version from cache name (e.g., "LOG_CACHE_1.0.1" -> "1.0.1")
-  const latestCache = logCaches[logCaches.length - 1];
-  return latestCache.replace('LOG_CACHE_', '');
+  const names = await caches.keys();
+  const versions = names
+    .filter(isManagedCache)
+    .map((n) => {
+      const len = cachePrefixLen(n);
+      return len > 0 ? n.slice(len) : null;
+    })
+    .filter(Boolean);
+  if (versions.length === 0) return null;
+  versions.sort();
+  return versions[versions.length - 1];
 };
 
-const installNewCache = async (version) => {
-  const cacheName = getCacheName(version);
-  console.log("Installing new cache:", cacheName);
-  
-  const cache = await caches.open(cacheName);
-  
-  try {
-    const response = await fetch("/asset-manifest.json");
-    const assets = await response.json();
-    const assetsToCache = [
-      ...assets,
-      // Dynamically added packages
-      "/js/marked/marked.esm.js",
-      "/js/marked-extended-tables/index.js",
-      "/js/marked-alert/index.js",
-      "/js/@highlightjs/highlight.min.js",
-      "/css/@highlightjs/github.min.css",
-      "/css/@highlightjs/github-dark.min.css",
-    ];
+const dedupe = (list) => Array.from(new Set(list));
 
-    // If needed, cache highlight.js languages dynamically
-    const configData = await getConfig();
-    const highlightLanguages = configData?.highlightLanguages;
-    if (highlightLanguages) {
-      highlightLanguages.forEach(lang => {
-        if (lang.trim()) {
-          assetsToCache.push(`/js/@highlightjs/languages/${lang.trim()}.min.js`);
-        }
-      });
-    }
-    
-    console.log("Assets to cache:", { assetsToCache });
-    await cache.addAll(assetsToCache);
-    console.log("Cache installation complete for version:", version);
-  } catch (error) {
-    console.error("Failed to install cache:", error);
-    throw error;
+const installNewCache = async (version) => {
+  const cacheName = `${CACHE_PREFIX}${version}`;
+  console.log(`Snake SW installing cache ${cacheName}`);
+  const manifestRes = await fetch("/asset-manifest.json", { cache: "no-store" });
+  if (!manifestRes.ok) {
+    throw new Error(`asset-manifest.json returned ${manifestRes.status}`);
   }
+  const assets = (await safeJson(manifestRes)) || [];
+  const assetsToCache = dedupe([...SHELL_FILES, ...assets]);
+  const cache = await caches.open(cacheName);
+  await cache.addAll(assetsToCache);
+  console.log(`Snake cache pre-populated for v${version}`);
 };
 
 const cleanupOldCaches = async (currentVersion) => {
-  const currentCacheName = getCacheName(currentVersion);
-  console.log("Cleaning up old caches, keeping current cache:", currentCacheName);
-
-  const cacheNames = await caches.keys();
-  const deletePromises = cacheNames
-    .filter(name => 
-      (name.startsWith('LOG_CACHE_') || 
-       name.startsWith('LOG_PWA_CACHE')) && 
-      name !== currentCacheName
-    )
-    .map(name => {
-      console.log("Deleting old cache:", name);
+  const currentName = `${CACHE_PREFIX}${currentVersion}`;
+  const names = await caches.keys();
+  const deletes = names
+    .filter((name) => isManagedCache(name) && name !== currentName)
+    .map((name) => {
+      console.log(`Snake cache deleted (old): ${name}`);
       return caches.delete(name);
     });
-
-  return Promise.all(deletePromises);
+  return Promise.all(deletes);
 };
 
 const checkAndUpdateCache = async () => {
-  console.log("Checking cache version...");
-  
   const appVersion = await getAppVersion();
   const cacheVersion = await getCurrentCacheVersion();
-  
-  console.log("App version:", appVersion);
-  console.log("Cache version:", cacheVersion);
-  
+  console.log(`Snake SW check: app=${appVersion} cache=${cacheVersion ?? "none"}`);
   if (!cacheVersion) {
-    // First time installation
-    console.log("First time installation - installing cache");
     await installNewCache(appVersion);
     return { updated: true, firstInstall: true };
   }
-  
   if (cacheVersion !== appVersion) {
-    // Version mismatch - update cache
-    console.log("Version mismatch - updating cache");
     await installNewCache(appVersion);
     await cleanupOldCaches(appVersion);
     return { updated: true, firstInstall: false };
   }
-  
-  console.log("Cache up to date");
   return { updated: false, firstInstall: false };
 };
 
 self.addEventListener("install", (event) => {
-  console.log("Service worker installing...");
-  // Force the waiting service worker to become the active service worker
-  self.skipWaiting();
+  console.log(`Snake SW installing v${APP_VERSION}`);
+  event.waitUntil(
+    (async () => {
+      try {
+        await getAppVersion();
+        await installNewCache(APP_VERSION);
+      } catch (err) {
+        console.error("Snake SW install failed:", err);
+        throw err;
+      }
+    })().then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener("activate", (event) => {
-  console.log("Service worker activating...");
-  
+  console.log(`Snake SW activating v${APP_VERSION}`);
   event.waitUntil(
-    checkAndUpdateCache().then(({ updated, firstInstall }) => {
-      // Take control of all clients immediately
-      return self.clients.claim().then(() => {
-        if (updated && !firstInstall) {
-          // Cache was updated and it's not the first install - reload page
-          console.log("Cache updated - notifying clients to reload");
-          self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-              client.postMessage({ 
-                type: 'CACHE_UPDATED', 
-                reload: true,
-                version: APP_VERSION
-              });
-            });
-          });
-        } else if (updated && firstInstall) {
-          // First install - just notify, don't reload
-          console.log("Cache installed for first time");
-          self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-              client.postMessage({ 
-                type: 'CACHE_INSTALLED', 
-                reload: false,
-                version: APP_VERSION
-              });
-            });
-          });
-        }
-      });
-    })
+    (async () => {
+      const { updated, firstInstall } = await checkAndUpdateCache();
+      await self.clients.claim();
+      if (!updated) return;
+      const clients = await self.clients.matchAll({ includeUncontrolled: true });
+      for (const client of clients) {
+        client.postMessage({
+          type: firstInstall ? "CACHE_INSTALLED" : "CACHE_UPDATED",
+          reload: !firstInstall,
+          version: APP_VERSION,
+        });
+      }
+    })()
   );
 });
 
 self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+  let url;
+  try {
+    url = new URL(req.url);
+  } catch (_) {
+    return;
+  }
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith("/api/")) return;
+  if (url.pathname === "/service-worker.js") return;
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    caches.match(req).then((cached) => cached || fetch(req))
   );
 });
 
-// Handle version check requests from the main thread
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === 'CHECK_VERSION') {
-    checkAndUpdateCache().then(({ updated, firstInstall }) => {
-      event.ports[0].postMessage({
-        updated,
-        firstInstall,
-        version: APP_VERSION
-      });
-    });
-  }
+  if (!event.data || event.data.type !== "CHECK_VERSION") return;
+  checkAndUpdateCache().then(({ updated, firstInstall }) => {
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({ updated, firstInstall, version: APP_VERSION });
+    }
+  });
 });

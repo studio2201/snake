@@ -66,7 +66,7 @@ mod tests {
     use tokio::sync::RwLock;
 
     fn build_state(pin: Option<&str>) -> AppState {
-        let mut server = shared_backend::server::ServerConfig::from_env("Snake");
+        let mut server = shared_backend::server::ServerConfig::from_env(crate::config::APP_BRAND);
         server.pin = pin.map(|s| s.to_string());
         let cfg = AppConfig {
             server,

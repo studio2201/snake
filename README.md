@@ -3,7 +3,7 @@
 [![CI](https://github.com/UberMetroid/snake/actions/workflows/ci.yml/badge.svg)](https://github.com/UberMetroid/snake/actions/workflows/ci.yml)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.29" alt="Snake Logo" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.30" alt="Snake Logo" width="128" height="128">
 </p>
 
 ## Overview

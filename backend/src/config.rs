@@ -7,6 +7,11 @@
 
 use shared_backend::server::ServerConfig;
 
+/// Canonical application brand name surfaced as the default PWA / site
+/// title fallback. Use this constant instead of hard-coding the literal
+/// `"Snake"` at call sites.
+pub const APP_BRAND: &str = "Snake";
+
 /// Env-var name controlling the undo-history cookie lifetime.
 pub const PAGE_HISTORY_COOKIE_AGE_ENV: &str = "PAGE_HISTORY_COOKIE_AGE";
 
@@ -64,7 +69,7 @@ impl AppConfig {
         node_env: String,
         version: String,
     ) -> Self {
-        let mut server = ServerConfig::from_env("Snake");
+        let mut server = ServerConfig::from_env(APP_BRAND);
         // Only override the port if the caller explicitly asked for one that
         // differs from the shared default. This avoids clobbering `PORT`
         // when the caller is just forwarding the env-driven value.

@@ -30,9 +30,12 @@ async fn send_raw(
 async fn service_worker_fallback_when_placeholder_missing() {
     let (_tmp, _state, router) = build_test_app(None).await;
     let sw_path = _state.web_root.join("service-worker.js");
-    tokio::fs::write(&sw_path, b"// no version assignment here\nself.addEventListener('fetch', () => {});\n")
-        .await
-        .expect("write sw");
+    tokio::fs::write(
+        &sw_path,
+        b"// no version assignment here\nself.addEventListener('fetch', () => {});\n",
+    )
+    .await
+    .expect("write sw");
     let (status, body, _headers) = send_raw(&router, get("/service-worker.js")).await;
     assert_eq!(status, StatusCode::OK);
     let text = std::str::from_utf8(&body).expect("utf8");

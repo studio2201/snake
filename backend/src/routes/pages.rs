@@ -93,7 +93,10 @@ mod tests {
         // temp web-root. Instead, verify the substitution logic in isolation
         // by mirroring it on a synthetic HTML body.
         let body = "<title>{{SITE_TITLE}}</title>";
-        let rendered = body.replace("{{SITE_TITLE}}", "Snake");
-        assert!(rendered.contains("<title>Snake</title>"));
+        let rendered = body.replace("{{SITE_TITLE}}", crate::config::APP_BRAND);
+        assert!(
+            rendered.contains(&format!("<title>{}</title>", crate::config::APP_BRAND)),
+            "rendered = {rendered:?}",
+        );
     }
 }
