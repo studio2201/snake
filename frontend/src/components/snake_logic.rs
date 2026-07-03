@@ -4,10 +4,9 @@
 //! future WASM test harness and so the [`crate::components::snake::tick`]
 //! module stays focused on the timer loop.
 
-use yew::UseStateHandle;
+pub use crate::components::snake::Pos;
 
-/// A single cell coordinate on the [`crate::components::snake_board`] grid.
-pub type Pos = (i32, i32);
+use yew::UseStateHandle;
 
 /// Advances the snake one step in `next_dir`.
 ///
@@ -44,7 +43,7 @@ pub fn handle_tick(
         game_over.set(true);
         return;
     }
-    if current_snake.iter().any(|&pos| pos == new_head) {
+    if current_snake.contains(&new_head) {
         game_over.set(true);
         return;
     }

@@ -4,8 +4,8 @@
 //! the view layer. Keeping the helpers small and focused lets the
 //! [`state`] hook body stay readable.
 
+use super::Pos;
 use super::food::generate_food;
-use super::snake_logic::Pos;
 use crate::api::{ApiService, LeaderboardEntry};
 use wasm_bindgen_futures::spawn_local;
 use web_sys::HtmlInputElement;
@@ -104,7 +104,7 @@ pub fn make_on_resume(paused: &UseStateHandle<bool>) -> Callback<MouseEvent> {
 pub fn make_set_next_dir(
     next_direction: &UseStateHandle<Pos>,
     direction: &UseStateHandle<Pos>,
-) -> impl Fn(i32, i32) + Clone {
+) -> impl Fn(i32, i32) + Clone + use<> {
     let next_dir = next_direction.clone();
     let dir = direction.clone();
     move |dx: i32, dy: i32| {

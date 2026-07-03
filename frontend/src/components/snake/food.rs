@@ -9,7 +9,7 @@
 use gloo_timers::callback::Timeout;
 use yew::prelude::*;
 
-use super::snake_logic::Pos;
+use super::Pos;
 
 /// Snake board width and height in cells.
 pub const GRID_SIZE: i32 = 20;
@@ -33,7 +33,7 @@ pub fn generate_food(snake: &[Pos]) -> Pos {
     loop {
         let x = (js_sys::Math::random() * GRID_SIZE as f64) as i32;
         let y = (js_sys::Math::random() * GRID_SIZE as f64) as i32;
-        let on_snake = snake.iter().any(|&pos| pos == (x, y));
+        let on_snake = snake.contains(&(x, y));
         if !on_snake || attempts >= MAX_GENERATE_ATTEMPTS {
             return (x, y);
         }

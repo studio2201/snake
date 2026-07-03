@@ -6,9 +6,8 @@ use axum::Json;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
-use time::OffsetDateTime;
-use time::format_description::well_known::Rfc3339;
 use tokio::fs;
 
 use crate::error::AppError;
@@ -92,10 +91,11 @@ pub async fn submit_score(
     let mut list = read_leaderboard(&path).await;
 
     entry.name = sanitize_player_name(&entry.name);
-    entry.date = OffsetDateTime::now_utc().format(&Rfc3339).map_err(|e| {
-        tracing::error!(target: "leaderboard", error = %e, "failed to format timestamp");
-        AppError::TimeFormat(e)
-    })?;
+    // `chrono::DateTime<Utc>::to_rfc3339` is infallible, so we don't need a
+    // dedicated error variant for timestamp formatting any more — keep the
+    // log site in case future format strings become fallible.
+    entry.date = Utc::now().to_rfc3339();
+    tracing::trace!(target: "leaderboard", date = %entry.date, "timestamped new entry");
 
     list.push(entry);
     list.sort_by_key(|e| std::cmp::Reverse(e.score));

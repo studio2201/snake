@@ -26,12 +26,11 @@ impl EventListener {
     /// underlying DOM call returns an error, which only happens for
     /// invalid event types (caught at compile time via the `&'static str`
     /// parameter convention) or detached targets.
-    pub fn new<F>(target: &web_sys::EventTarget, event_type: &'static str, mut callback: F) -> Self
+    pub fn new<F>(target: &web_sys::EventTarget, event_type: &'static str, callback: F) -> Self
     where
         F: FnMut(web_sys::Event) + 'static,
     {
-        let closure =
-            Closure::wrap(Box::new(move |e| callback(e)) as Box<dyn FnMut(web_sys::Event)>);
+        let closure = Closure::wrap(Box::new(callback) as Box<dyn FnMut(web_sys::Event)>);
         target
             .add_event_listener_with_callback(event_type, closure.as_ref().unchecked_ref())
             .expect("failed to attach event listener");

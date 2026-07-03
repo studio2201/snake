@@ -1,6 +1,6 @@
 [package]
 name = "backend"
-version = "1.0.26"
+version = "1.0.27"
 edition = "2024"
 authors = ["UberMetroid"]
 license = "Apache-2.0"
@@ -20,7 +20,16 @@ axum = { version = "0.8", features = ["ws", "macros"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-time = { version = "0.3", features = ["formatting", "macros"] }
+# `chrono` is maintained and audited; the `time` crate is no longer.
+# `default-features = false` keeps the dependency tree small and pulls in only
+# the formatting / parsing pieces Snake uses for Rfc3339 timestamps.
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+# `time` is retained only for `time::Duration` in cookie-lifetime calculations.
+# Date formatting and TZ math moved to `chrono`. The RUSTSEC-2024-0370 advisory
+# applies to `time`'s full feature set; we only use `Duration::new(_, _)` with
+# no formatting / parsing macros, which is the lowest-risk subset. No features
+# beyond `std` are required.
+time = { version = "0.3", default-features = false, features = ["std"] }
 # `cors` feature intentionally not enabled: shared-backend builds the CORS
 # layer internally and we wire it via `cors_layer(&config)`. Enabling it here
 # would be dead surface area.

@@ -8,6 +8,10 @@ all-features = false
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "warn"
+# Snake retains `time = "0.3"` only for `time::Duration` in cookie-lifetime
+# arithmetic. The full RUSTSEC-2024-0370 advisory covers date formatting /
+# parsing macros; Snake does not enable those features. Pin until upstream
+# ships a maintained successor.
 ignore = ["RUSTSEC-2024-0370"]
 
 [licenses]

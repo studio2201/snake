@@ -12,10 +12,15 @@
 //!   input, resume, dpad, set-next-direction).
 //! - [`keys`] — the keyboard event listener.
 //!
-//! Only the two top-level items needed by the view layer
-//! ([`SnakeState`] and [`use_snake_state`]) are re-exported here; the
+//! Only the items needed by the view layer ([`Pos`] and
+//! [`use_snake_state`](state::use_snake_state)) are re-exported here; the
 //! helpers stay behind their full module paths so internal callers can
-//! still pin down exactly which subsystem they're touching.
+//! still pin down exactly which subsystem they're touching. The [`Pos`]
+//! alias also feeds back through [`crate::components::snake_logic`] so its
+//! `Pos` symbol keeps the same identity.
+
+/// A single cell coordinate on the [`crate::components::snake_board`] grid.
+pub type Pos = (i32, i32);
 
 pub mod actions;
 pub mod food;
@@ -23,4 +28,4 @@ pub mod keys;
 pub mod state;
 pub mod tick;
 
-pub use state::{SnakeState, use_snake_state};
+pub use state::use_snake_state;

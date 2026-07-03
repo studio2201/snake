@@ -11,13 +11,13 @@ use crate::api::LeaderboardEntry;
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 
+use super::Pos;
 use super::actions::{
     make_on_dpad_press, make_on_name_input, make_on_restart, make_on_resume, make_on_submit_score,
     make_set_next_dir,
 };
 use super::food::{install_gold_timeout, load_high_score};
 use super::keys::install_keyboard_listener;
-use super::snake_logic::Pos;
 use super::tick::{TickInputs, install_tick_loop};
 
 /// Bundle returned by [`use_snake_state`].

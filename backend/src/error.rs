@@ -20,10 +20,6 @@ pub enum AppError {
     #[error("json: {0}")]
     Json(#[from] serde_json::Error),
 
-    /// Time-formatting failure (e.g. Rfc3339 on a non-formattable date).
-    #[error("time format: {0}")]
-    TimeFormat(#[from] time::error::Format),
-
     /// Anything else — the public message is fixed to avoid information leaks.
     #[error("{context}")]
     Internal {
@@ -43,7 +39,7 @@ impl AppError {
     #[must_use]
     pub fn status(&self) -> StatusCode {
         match self {
-            Self::Io(_) | Self::Json(_) | Self::TimeFormat(_) | Self::Internal { .. } => {
+            Self::Io(_) | Self::Json(_) | Self::Internal { .. } => {
                 StatusCode::INTERNAL_SERVER_ERROR
             }
         }
@@ -59,7 +55,6 @@ impl IntoResponse for AppError {
         let body = match &self {
             Self::Io(_) => "internal error: storage".to_string(),
             Self::Json(_) => "internal error: serialization".to_string(),
-            Self::TimeFormat(_) => "internal error: timestamp".to_string(),
             Self::Internal { .. } => "internal error".to_string(),
         };
         tracing::error!(target: "app_error", error = %self, status = %status, "request failed");

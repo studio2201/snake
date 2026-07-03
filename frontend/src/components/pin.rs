@@ -28,8 +28,8 @@ pub struct LoginProps {
 /// passes the gate configured by the backend.
 #[function_component(Login)]
 pub fn login(props: &LoginProps) -> Html {
-    let pin_input = use_state(|| String::new());
-    let error_msg = use_state(|| String::new());
+    let pin_input = use_state(String::new);
+    let error_msg = use_state(String::new);
     let is_locked = use_state(|| false);
     let pin_length = use_state(|| 4);
     let input_ref = use_node_ref();

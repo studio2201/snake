@@ -36,7 +36,7 @@ pub fn snake_board(props: &SnakeBoardProps) -> Html {
                             {
                                 for (0..grid_size).map(|x| {
                                     let is_snake_head = snake[0] == (x, y);
-                                    let is_snake_body = !is_snake_head && snake.iter().any(|&pos| pos == (x, y));
+                                    let is_snake_body = !is_snake_head && snake.contains(&(x, y));
                                     let is_food = food == (x, y);
 
                                     let cell_class = if is_snake_head {

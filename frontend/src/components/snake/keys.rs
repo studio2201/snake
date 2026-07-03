@@ -7,7 +7,7 @@
 
 use yew::prelude::*;
 
-use super::event_listener::EventListener;
+use crate::components::event_listener::EventListener;
 
 /// Maps a [`KeyboardEvent::key`](web_sys::KeyboardEvent::key) value to a
 /// direction delta.
@@ -39,15 +39,21 @@ pub fn install_keyboard_listener(
     paused: &UseStateHandle<bool>,
     on_dpad_press: &Callback<(i32, i32)>,
 ) {
-    let is_started = *started;
-    let is_game_over = *game_over;
-    let is_paused = *paused;
+    let is_started = **started;
+    let is_game_over = **game_over;
+    let is_paused = **paused;
     let paused = paused.clone();
     let on_dpad_press = on_dpad_press.clone();
 
     use_effect_with(
         (is_started, is_game_over, is_paused),
         move |(st, go, ps)| {
+            // Copy out the captured `bool`s so the inner `'static`
+            // `EventListener` closure can own them rather than borrowing
+            // from the outer `&(bool, bool, bool)` argument.
+            let st = *st;
+            let go = *go;
+            let ps = *ps;
             // The renderer only runs in a browser window, so `window()` is
             // safe to unwrap. Documented per the "no unwrap in non-test code"
             // rule that applies to this crate.
@@ -64,14 +70,14 @@ pub fn install_keyboard_listener(
                 let key = key_event.key();
 
                 if key == "Escape" || key == "p" || key == "P" {
-                    if *st && !*go {
-                        paused.set(!*ps);
+                    if st && !go {
+                        paused.set(!ps);
                     }
                     return;
                 }
 
                 // Disallow movement inputs while paused.
-                if *ps {
+                if ps {
                     return;
                 }
 

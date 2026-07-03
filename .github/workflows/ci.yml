@@ -39,3 +39,14 @@ jobs:
 
       - name: Test
         run: cargo test --workspace --all-targets --no-fail-fast
+
+      - name: Supply-chain & license audit
+        # `cargo-deny` enforces:
+        #  - banned/duplicate versions
+        #  - license whitelist compliance (Apache-2.0/MIT/BSD/ISC/etc.)
+        #  - security advisories (RUSTSEC-*)
+        # Network fetch of the RustSec advisory DB is cached by Swatinem/rust-cache.
+        uses: cargo-deny/cargo-deny-action@v2
+        with:
+          command: check
+          arguments: --all-features

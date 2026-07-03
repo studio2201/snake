@@ -4,6 +4,12 @@
 //! (clamped) lifetime so every auth-related handler issues identical
 //! cookies.
 
+//! Build the authentication `Cookie` value.
+//!
+//! Single source of truth for `HttpOnly`, `SameSite`, path, and the
+//! (clamped) lifetime so every auth-related handler issues identical
+//! cookies.
+
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use time::Duration;
 
