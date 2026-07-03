@@ -73,14 +73,20 @@ pub(crate) fn load_high_score() -> u32 {
 /// [`GOLD_TIMEOUT_MS`] ms in the future. On fire it clears the gold flag
 /// and respawns the food at a free cell via [`generate_food`]. The cleanup
 /// closure drops the timeout handle so a fresh timeout can replace it.
-pub fn install_gold_timeout(
+#[hook]
+pub fn use_gold_timeout(
     is_gold: &UseStateHandle<bool>,
     food: &UseStateHandle<Pos>,
     snake: &UseStateHandle<Vec<Pos>>,
 ) {
     let is_gold = is_gold.clone();
     let food = food.clone();
-    let snake = snake.clone();
+
+    // Store the latest snake coordinates in a ref to avoid stale closure capture
+    let snake_ref = use_mut_ref(|| (*snake).clone());
+    *snake_ref.borrow_mut() = (*snake).clone();
+
+    let snake_ref_for_timeout = snake_ref.clone();
 
     use_effect_with((*is_gold, *food), move |&(gold, _f)| {
         if !gold {
@@ -89,10 +95,11 @@ pub fn install_gold_timeout(
 
         let is_gold = is_gold.clone();
         let food = food.clone();
-        let snake = snake.clone();
+        let snake_ref = snake_ref_for_timeout.clone();
         let timeout = Timeout::new(GOLD_TIMEOUT_MS, move || {
             is_gold.set(false);
-            food.set(generate_food(&snake));
+            let current_snake = snake_ref.borrow();
+            food.set(generate_food(&current_snake));
         });
         Box::new(move || drop(timeout)) as Box<dyn FnOnce()>
     });

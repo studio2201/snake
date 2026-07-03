@@ -16,7 +16,7 @@ use super::actions::{
     make_on_dpad_press, make_on_name_input, make_on_restart, make_on_resume, make_on_submit_score,
     make_set_next_dir,
 };
-use super::food::{install_gold_timeout, load_high_score};
+use super::food::{use_gold_timeout, load_high_score};
 use super::keys::use_keyboard_listener;
 use super::tick::{TickInputs, use_tick_loop};
 
@@ -92,7 +92,7 @@ pub fn use_snake_state(on_status: Callback<Option<(String, String)>>) -> SnakeSt
         });
     }
 
-    install_gold_timeout(&is_gold, &food, &snake);
+    use_gold_timeout(&is_gold, &food, &snake);
     use_tick_loop(TickInputs {
         started: started.clone(),
         paused: paused.clone(),
