@@ -58,7 +58,8 @@ is informational — no runtime behaviour changes.
 ### `unsafe` blocks
 - **None**: No `unsafe { ... }` blocks in production code. The workspace
   also enforces `unsafe_code = "deny"` in `Cargo.toml`'s `[workspace.lints.rust]`,
-  which would cause any new `unsafe` to fail clippy in CI.
+  which would cause any new `unsafe` to fail `cargo clippy` (locally and on any
+  reviewer's machine).
 
 ### Crypto shortcuts
 - **OK**: PIN comparison uses `constant_time_eq` at both credential-check

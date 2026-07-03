@@ -41,7 +41,10 @@ impl App {
             // Treat PIN as required until the backend disagrees; this avoids
             // briefly exposing the game UI to unauthenticated users.
             is_pin_required: true,
-            enable_translation: false,
+            // Defaults align with backend `config.rs::assemble`: translation
+            // is on by default, themes on, print off. Once `/api/config`
+            // resolves, the backend value wins.
+            enable_translation: true,
             enable_themes: true,
             enable_print: false,
             show_version: true,

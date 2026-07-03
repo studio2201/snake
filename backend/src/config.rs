@@ -18,11 +18,40 @@ pub const PAGE_HISTORY_COOKIE_AGE_ENV: &str = "PAGE_HISTORY_COOKIE_AGE";
 /// Env-var name indicating whether the deployment is dev or production.
 pub const NODE_ENV_VAR: &str = "NODE_ENV";
 
+/// Env-var name controlling the language picker visibility.
+pub const ENABLE_TRANSLATION_ENV: &str = "ENABLE_TRANSLATION";
+
 /// Fallback for [`AppConfig::node_env`] when the env var is unset.
 pub const DEFAULT_NODE_ENV: &str = "development";
 
 /// Default undo-history cookie age in days.
 pub const DEFAULT_PAGE_HISTORY_COOKIE_AGE_DAYS: i64 = 365;
+
+/// Parse a raw `ENABLE_TRANSLATION` env value into the boolean to assign.
+///
+/// Reading happens here (rather than inline in `assemble`) so the parsing
+/// rule — and the canonical "off" tokens — has a single home that's easy
+/// to test and reuse.
+///
+/// Recognised truthy values: `true`, `1`, `yes`, `on` (case-insensitive),
+/// plus anything else that's not in the off-list. Anything unparseable
+/// stays on the safe default (`true`) rather than disabling translation
+/// for a misconfigured operator.
+#[must_use]
+pub fn parse_translation_env(raw: Option<&str>) -> bool {
+    raw.map(|v| {
+        !matches!(
+            v.to_ascii_lowercase().as_str(),
+            "false" | "0" | "no" | "off"
+        )
+    })
+    .unwrap_or(true)
+}
+
+/// Live read of `ENABLE_TRANSLATION` from the current process env.
+fn read_translation_env() -> bool {
+    parse_translation_env(std::env::var(ENABLE_TRANSLATION_ENV).ok().as_deref())
+}
 
 /// Snake application configuration. Wraps [`ServerConfig`] with snake-specific
 /// retention and version fields.
@@ -77,11 +106,19 @@ impl AppConfig {
             server.port = port;
         }
 
+        // `ENABLE_TRANSLATION` defaults to `true` for Snake (the shared
+        // `ServerConfig::from_env` defaults to `false`, which is the
+        // upstream notepad convention). Any value other than the
+        // canonical "off" tokens enables the language picker. Operators
+        // who want it disabled set `ENABLE_TRANSLATION=false`.
+        server.enable_translation = read_translation_env();
+
         tracing::debug!(
             target: "config",
             port = server.port,
             site_title = %server.site_title,
             pin_enabled = server.pin_enabled(),
+            enable_translation = server.enable_translation,
             version = %version,
             "configuration loaded"
         );
@@ -106,6 +143,40 @@ mod tests {
         assert_eq!(cfg.node_env, "test");
         assert_eq!(cfg.version, "1.2.3");
         assert!(!cfg.version.is_empty());
+        assert!(cfg.server.enable_translation);
+    }
+
+    #[test]
+    fn parse_translation_env_defaults_to_true_when_unset() {
+        assert!(parse_translation_env(None));
+    }
+
+    #[test]
+    fn parse_translation_env_respects_off_tokens() {
+        for off in ["false", "False", "FALSE", "0", "no", "off"] {
+            assert!(
+                !parse_translation_env(Some(off)),
+                "ENABLE_TRANSLATION={off} should disable translation"
+            );
+        }
+    }
+
+    #[test]
+    fn parse_translation_env_respects_truthy_tokens() {
+        for on in ["true", "True", "TRUE", "1", "yes", "on"] {
+            assert!(
+                parse_translation_env(Some(on)),
+                "ENABLE_TRANSLATION={on} should enable translation"
+            );
+        }
+    }
+
+    #[test]
+    fn parse_translation_env_unknown_token_keeps_default() {
+        // "maybe" / "" aren't in the off-list, so the !matches! check
+        // evaluates to true — translation stays enabled (the safe default).
+        assert!(parse_translation_env(Some("maybe")));
+        assert!(parse_translation_env(Some("")));
     }
 
     #[test]

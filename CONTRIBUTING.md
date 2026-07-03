@@ -36,7 +36,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 ```
 
-CI enforces these checks on every push and PR — see `.github/workflows/ci.yml`.
+Run these locally before pushing. Maintainers review PRs against the same checks.
 
 ## Pull Request Process
 

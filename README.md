@@ -1,9 +1,7 @@
 # Snake - Traditional Arcade Game
 
-[![CI](https://github.com/UberMetroid/snake/actions/workflows/ci.yml/badge.svg)](https://github.com/UberMetroid/snake/actions/workflows/ci.yml)
-
 <p align="center">
-  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.35" alt="Snake Logo" width="128" height="128">
+  <img src="https://raw.githubusercontent.com/UberMetroid/snake/main/assets/logo.png?v=1.0.36" alt="Snake Logo" width="128" height="128">
 </p>
 
 ## Overview
@@ -187,7 +185,7 @@ Configure these settings inside your Docker Compose environment or container env
 | `ALLOWED_ORIGINS` | Comma-separated list of allowed HTTP request origins (CORS filter). Use `*` to allow all origins. | `*` |
 | `SNAKE_PIN` | Optional PIN to lock access to the interface. Frontend accepts 4–10 ASCII digits; backend accepts 4-64 characters of any kind. Leave empty for public mode. *(Supports fallback `PIN`)* | None |
 | `TZ` | Timezone for the container processes and logs. | `UTC` |
-| `ENABLE_TRANSLATION` | Enable the multi-language / translation selector in the navigation header (true/false). | `false` |
+| `ENABLE_TRANSLATION` | Enable the multi-language / translation selector in the navigation header (true/false). | `true` |
 | `ENABLE_THEMES` | Enable the Super Metroid theme selector in the navigation header (true/false). | `true` |
 | `ENABLE_PRINT` | Enable the print button in the navigation header (true/false). | `false` |
 | `MAX_ATTEMPTS` | Maximum PIN auth attempts allowed before rate lockout. | `5` |

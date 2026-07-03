@@ -84,7 +84,7 @@ services:
 
       # ---- UI feature flags (header chrome) ----
       SITE_TITLE: ${SNAKE_SITE_TITLE:-Snake}
-      ENABLE_TRANSLATION: ${ENABLE_TRANSLATION:-false}
+      ENABLE_TRANSLATION: ${ENABLE_TRANSLATION:-true}
       ENABLE_THEMES: ${ENABLE_THEMES:-true}
       ENABLE_PRINT: ${ENABLE_PRINT:-true}
 

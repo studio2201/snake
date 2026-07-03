@@ -16,8 +16,8 @@ Fixes # (issue)
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
 
-- [ ] Tested locally using cargo/trunk commands
-- [ ] All CI formatting, clippy, and test checks pass
+- [ ] Tested locally using `cargo fmt --check` + `cargo clippy -D warnings` + `cargo test`
+- [ ] Trunk build verified (`trunk build --release`) for frontend changes
 
 ## Checklist:
 

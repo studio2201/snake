@@ -28,7 +28,7 @@
         # 1. Build the WASM frontend
         frontend = rustPlatform.buildRustPackage {
           pname = "snake-frontend";
-          version = "1.0.35";
+          version = "1.0.36";
           src = ./.;
 
           cargoLock = {
@@ -75,7 +75,7 @@
         # 2. Build the Axum backend
         backend = rustPlatform.buildRustPackage {
           pname = "snake-backend";
-          version = "1.0.35";
+          version = "1.0.36";
           src = ./.;
 
           cargoLock = {
