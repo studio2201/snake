@@ -1,0 +1,92 @@
+# =============================================================================
+# snake — UBI container image (Red Hat Universal Base Image)
+# =============================================================================
+# What you ship: ubi9/ubi-minimal runtime (RHEL-family RPM userspace).
+# Build stage: rust official image (reliable wasm32 + trunk). Runtime is pure UBI.
+#
+# Build (Podman):
+#   cd ~/Projects/ubermetroid/snake
+#   podman build -f Containerfile.ubi -t snake-ubi:latest .
+#
+# Run:
+#   podman run --rm -p 4501:4501 \
+#     -e SNAKE_PIN= \
+#     -e BASE_URL=http://localhost:4501 \
+#     -e ALLOWED_ORIGINS='*' \
+#     -v snake-data:/app/data:Z \
+#     snake-ubi:latest
+#
+
+# Compare size:
+#   podman images | grep -E 'snake-ubi|ubermetroid/snake'
+# =============================================================================
+
+# ---------- build: compile backend + WASM frontend ----------
+# Official Rust image + rustup (matches rust-toolchain.toml). This stage is
+# discarded; only the binary and frontend/dist are copied into UBI.
+FROM docker.io/library/rust:bookworm AS builder
+
+WORKDIR /src
+COPY rust-toolchain.toml ./
+
+# Install the exact channel from rust-toolchain.toml (1.96 + wasm32)
+RUN rustup show \
+ && rustup target add wasm32-unknown-unknown \
+ && cargo install trunk wasm-bindgen-cli --locked
+
+# Cache deps: copy manifests first
+COPY Cargo.toml Cargo.lock ./
+COPY backend/Cargo.toml backend/Cargo.toml
+COPY frontend/Cargo.toml frontend/Cargo.toml
+
+# Dummy sources so the dependency layer can compile without full sources
+RUN mkdir -p backend/src frontend/src \
+ && echo 'fn main() {}' > backend/src/main.rs \
+ && echo 'fn main() {}' > frontend/src/main.rs
+
+# Fetch crates (needs network for crates.io + shared-assets git tag)
+RUN cargo fetch
+
+# Real sources (includes frontend/Assets/shared-assets styles for trunk)
+COPY backend backend
+COPY frontend frontend
+
+WORKDIR /src/frontend
+ENV CARGO_TARGET_DIR=/src/target
+RUN trunk build --release
+
+WORKDIR /src
+RUN cargo build --release -p backend \
+ && strip target/release/backend || true
+
+# ---------- runtime: Red Hat UBI Minimal ----------
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+
+LABEL org.opencontainers.image.title="snake" \
+      org.opencontainers.image.description="snake (UBI9 minimal pilot)" \
+      org.opencontainers.image.source="https://github.com/UberMetroid/snake" \
+      org.opencontainers.image.base.name="registry.access.redhat.com/ubi9/ubi-minimal"
+
+# ca-certificates for HTTPS outbound; wget for HEALTHCHECK.
+# UBI already has GID 100 (users); only create UID 99 if missing (Unraid-style).
+RUN microdnf install -y ca-certificates wget shadow-utils \
+ && microdnf clean all \
+ && (getent passwd 99 >/dev/null || useradd -u 99 -g 100 -M -d /app -s /sbin/nologin app) \
+ && mkdir -p /app/data /app/frontend/dist \
+ && chown -R 99:100 /app
+
+COPY --from=builder /src/target/release/backend /app/backend
+COPY --from=builder /src/frontend/dist /app/frontend/dist
+
+WORKDIR /app
+USER 99:100
+
+ENV PORT=4501 \
+    RUST_LOG=info
+
+EXPOSE 4501
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -qO- "http://127.0.0.1:${PORT:-4501}/health" >/dev/null || exit 1
+
+CMD ["/app/backend"]
