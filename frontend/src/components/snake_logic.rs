@@ -84,7 +84,15 @@ pub fn apply_tick(input: PureTickInputs, gold_roll: f64, new_food: Pos) -> PureT
             is_gold: input.is_gold,
         };
     }
-    if current_snake.contains(&new_head) {
+    // Self-collision: when not eating, the tail vacates this tick, so ignore
+    // the last body cell (classic snake off-by-one).
+    let will_grow = new_head == input.food;
+    let body_for_collision: &[(i32, i32)] = if will_grow || current_snake.is_empty() {
+        &current_snake
+    } else {
+        &current_snake[..current_snake.len().saturating_sub(1)]
+    };
+    if body_for_collision.contains(&new_head) {
         return PureTickOutputs {
             snake: current_snake,
             direction,
@@ -99,7 +107,7 @@ pub fn apply_tick(input: PureTickInputs, gold_roll: f64, new_food: Pos) -> PureT
     let mut next_snake = vec![new_head];
     next_snake.extend_from_slice(&current_snake);
 
-    let (food, score, high_score, is_gold) = if new_head == input.food {
+    let (food, score, high_score, is_gold) = if will_grow {
         let points = if input.is_gold {
             GOLD_FOOD_POINTS
         } else {

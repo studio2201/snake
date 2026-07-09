@@ -64,13 +64,15 @@ pub fn make_on_submit_score(
     on_status: &Callback<Option<(String, String)>>,
 ) -> Callback<SubmitEvent> {
     let name = player_name.clone();
-    let score_val = **score;
+    let score = score.clone();
     let submitting = submitting.clone();
     let leaderboard = leaderboard.clone();
     let submitted = submitted.clone();
     let on_status = on_status.clone();
     Callback::from(move |e: SubmitEvent| {
         e.prevent_default();
+        // Read score at submit time (not when the callback was built).
+        let score_val = *score;
         let name_str = (*name).clone();
         if name_str.trim().is_empty() || *submitting {
             return;

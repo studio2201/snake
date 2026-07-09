@@ -6,7 +6,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     flake-utils.url = "github:numtide/flake-utils";
     shared-assets = {
-      url = "github:UberMetroid/shared-assets?ref=v3.0.18";
+      url = "github:UberMetroid/shared-assets?ref=v3.0.19";
       flake = false;
     };
   };
@@ -33,16 +33,7 @@
 
           cargoLock = {
             lockFile = ./Cargo.lock;
-            # Cargo keys the github-archive tarball of `inputs.shared-assets`
-            # to its crate versions (3.0.18 here). The expected hash is the
-            # SRI sha256 of the upstream tarball — same value for all three
-            # crates because they come from a single tag. Verified against
-            # `nix-prefetch-url https://github.com/UberMetroid/shared-assets/archive/refs/tags/v3.0.17.tar.gz`.
-            outputHashes = {
-              "shared-core-3.0.18" = "sha256-sjkQrpXtrCQKWk1hQeTw1GHvcpl+tthWKkEWuyZOXSA=";
-              "shared-backend-3.0.18" = "sha256-sjkQrpXtrCQKWk1hQeTw1GHvcpl+tthWKkEWuyZOXSA=";
-              "shared-frontend-3.0.18" = "sha256-sjkQrpXtrCQKWk1hQeTw1GHvcpl+tthWKkEWuyZOXSA=";
-            };
+            allowBuiltinFetchGit = true;
           };
 
           nativeBuildInputs = [
@@ -80,13 +71,7 @@
 
           cargoLock = {
             lockFile = ./Cargo.lock;
-            # Same values as the frontend derivation; see the comment there
-            # for why all three map to the same SRI sha256.
-            outputHashes = {
-              "shared-core-3.0.18" = "sha256-sjkQrpXtrCQKWk1hQeTw1GHvcpl+tthWKkEWuyZOXSA=";
-              "shared-backend-3.0.18" = "sha256-sjkQrpXtrCQKWk1hQeTw1GHvcpl+tthWKkEWuyZOXSA=";
-              "shared-frontend-3.0.18" = "sha256-sjkQrpXtrCQKWk1hQeTw1GHvcpl+tthWKkEWuyZOXSA=";
-            };
+            allowBuiltinFetchGit = true;
           };
 
           nativeBuildInputs = [ pkgs.pkg-config ];
