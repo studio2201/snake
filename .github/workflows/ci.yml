@@ -23,7 +23,7 @@ jobs:
         run: wget -qO- https://github.com/trunk-rs/trunk/releases/download/v0.21.3/trunk-x86_64-unknown-linux-gnu.tar.gz | sudo tar -xzf- -C /usr/local/bin
 
       - name: Install wasm-bindgen-cli
-        run: wget -qO- https://github.com/rustwasm/wasm-bindgen/releases/download/0.2.121/wasm-bindgen-0.2.121-x86_64-unknown-linux-gnu.tar.gz | sudo tar -xzf- --strip-components=1 -C /usr/local/bin
+        run: wget -qO- https://github.com/wasm-bindgen/wasm-bindgen/releases/download/0.2.121/wasm-bindgen-0.2.121-x86_64-unknown-linux-musl.tar.gz | sudo tar -xzf- --strip-components=1 -C /usr/local/bin
 
       - name: Build Frontend
         working-directory: frontend
