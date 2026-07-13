@@ -1,5 +1,7 @@
 # <img src="assets/icon.png" width="32" height="32" valign="middle"> Snake
 
+[![CI](https://github.com/dachoras/snake/actions/workflows/ci.yml/badge.svg)](https://github.com/dachoras/snake/actions/workflows/ci.yml)
+
 Traditional arcade snake game.
 
 ## Quick Start
