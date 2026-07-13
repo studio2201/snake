@@ -1,4 +1,4 @@
-# Snake
+# <img src="assets/icon.png" width="32" height="32" valign="middle"> Snake
 
 Traditional arcade snake game.
 
