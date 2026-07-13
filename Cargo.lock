@@ -152,16 +152,16 @@ dependencies = [
 
 [[package]]
 name = "backend"
-version = "1.0.47"
+version = "1.0.53"
 dependencies = [
  "axum",
  "axum-extra",
  "chrono",
- "constant_time_eq",
+ "constant_time_eq 0.5.0",
  "cookie",
  "dotenvy",
  "percent-encoding",
- "rand 0.8.6",
+ "rand",
  "regex",
  "serde",
  "serde_json",
@@ -173,7 +173,7 @@ dependencies = [
  "time",
  "tokio",
  "tower",
- "tower-http",
+ "tower-http 0.7.0",
  "tracing",
  "tracing-subscriber",
 ]
@@ -283,6 +283,12 @@ name = "constant_time_eq"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
+
+[[package]]
+name = "constant_time_eq"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1a1ec0cfec728a79a5109075543131387f911cb4d07716436d7ae20533657a96"
 
 [[package]]
 name = "cookie"
@@ -434,7 +440,7 @@ dependencies = [
 
 [[package]]
 name = "frontend"
-version = "1.0.47"
+version = "1.0.53"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -1317,33 +1323,12 @@ checksum = "69cdb34c158ceb288df11e18b4bd39de994f6657d83847bdffdbd7f346754b0f"
 
 [[package]]
 name = "rand"
-version = "0.8.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ca0ecfa931c29007047d1bc58e623ab12e5590e8c7cc53200d5202b69266d8a"
-dependencies = [
- "libc",
- "rand_chacha 0.3.1",
- "rand_core 0.6.4",
-]
-
-[[package]]
-name = "rand"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44c5af06bb1b7d3216d91932aed5265164bf384dc89cd6ba05cf59a35f5f76ea"
 dependencies = [
- "rand_chacha 0.9.0",
- "rand_core 0.9.5",
-]
-
-[[package]]
-name = "rand_chacha"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
-dependencies = [
- "ppv-lite86",
- "rand_core 0.6.4",
+ "rand_chacha",
+ "rand_core",
 ]
 
 [[package]]
@@ -1353,16 +1338,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3022b5f1df60f26e1ffddd6c66e8aa15de382ae63b3a0c1bfc0e4d3e3f325cb"
 dependencies = [
  "ppv-lite86",
- "rand_core 0.9.5",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
-dependencies = [
- "getrandom 0.2.17",
+ "rand_core",
 ]
 
 [[package]]
@@ -1576,12 +1552,12 @@ dependencies = [
 
 [[package]]
 name = "shared-backend"
-version = "3.0.19"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.19#2c5b0659ef7bcda53bec6d9c856c57dea9d06ee9"
+version = "3.0.29"
+source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.29#cad2021cf1809e6ac00dce80beab5f241272fc69"
 dependencies = [
  "anyhow",
  "axum",
- "constant_time_eq",
+ "constant_time_eq 0.3.1",
  "dotenvy",
  "http-body-util",
  "ipnet",
@@ -1590,24 +1566,24 @@ dependencies = [
  "shared-core",
  "thiserror 2.0.18",
  "tokio",
- "tower-http",
+ "tower-http 0.6.11",
  "tracing",
  "tracing-subscriber",
 ]
 
 [[package]]
 name = "shared-core"
-version = "3.0.19"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.19#2c5b0659ef7bcda53bec6d9c856c57dea9d06ee9"
+version = "3.0.29"
+source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.29#cad2021cf1809e6ac00dce80beab5f241272fc69"
 dependencies = [
- "constant_time_eq",
+ "constant_time_eq 0.3.1",
  "serde",
 ]
 
 [[package]]
 name = "shared-frontend"
-version = "3.0.19"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.19#2c5b0659ef7bcda53bec6d9c856c57dea9d06ee9"
+version = "3.0.29"
+source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.29#cad2021cf1809e6ac00dce80beab5f241272fc69"
 dependencies = [
  "js-sys",
  "serde",
@@ -1896,6 +1872,22 @@ checksum = "4cfcf7e2740e6fc6d4d688b4ef00650406bb94adf4731e43c096c3a19fe40840"
 dependencies = [
  "bitflags",
  "bytes",
+ "http 1.4.2",
+ "http-body",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+ "tracing",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b11f75e912b0c2be01b63d8cf8057b8c3f97cf34abb3d431a3a4c8675498e233"
+dependencies = [
+ "bitflags",
+ "bytes",
  "futures-core",
  "futures-util",
  "http 1.4.2",
@@ -1999,7 +1991,7 @@ dependencies = [
  "http 1.4.2",
  "httparse",
  "log",
- "rand 0.9.4",
+ "rand",
  "sha1",
  "thiserror 2.0.18",
 ]

@@ -5,7 +5,7 @@
 //! to anyone who can guess when the server booted. Instead we always draw
 //! from `OsRng`, the operating system's cryptographic RNG.
 
-use rand::{RngCore, rngs::OsRng};
+use rand::{TryRngCore, rngs::OsRng};
 
 /// Length (in bytes) of the random session token before hex encoding.
 ///
@@ -24,7 +24,10 @@ pub fn generate_session_id() -> String {
     let mut bytes = [0u8; SESSION_ID_BYTES];
     OsRng
         .try_fill_bytes(&mut bytes)
-        .or_else(|_| rand::Rng::try_fill(&mut rand::thread_rng(), &mut bytes))
+        .or_else(|_| {
+            let mut r = rand::rng();
+            r.try_fill_bytes(&mut bytes)
+        })
         .unwrap_or_else(|_| {
             // Last-ditch: panic-free zeroed bytes. The cookie will be
             // rejected on next request because it won't match a stored
