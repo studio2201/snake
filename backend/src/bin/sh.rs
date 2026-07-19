@@ -104,8 +104,12 @@ fn print_help() {
     println!("Usage: sh [command]");
     println!();
     println!("Commands:");
+    println!("  version        Show application version");
     println!("  status         Show service status and configurations");
     println!("  env            Print loaded configuration environment variables");
+    println!("  doctor         Perform system health and permission diagnostics");
+    println!("  start          Launch backend server process if stopped");
+    println!("  end / close    Gracefully terminate the backend server process");
     println!("  data stats     Show database/storage file statistics");
     println!("  data list      List items stored in the database");
     println!("  data clear     Delete the database to reset application state");
@@ -119,6 +123,137 @@ fn get_db_file_path() -> Option<PathBuf> {
         None
     } else {
         Some(get_data_dir().join(DB_FILE_NAME))
+    }
+}
+
+fn run_doctor() {
+    println!("=== {} Doctor Diagnostics ===", APP_NAME);
+    let mut failures = 0;
+
+    // 1. Check data directory permissions
+    let data_dir = get_data_dir();
+    print!("Checking data directory {:?}... ", data_dir);
+    let _ = io::stdout().flush();
+    if let Err(e) = fs::create_dir_all(&data_dir) {
+        println!("\x1B[1;31m[FAIL] (Cannot create directory: {})\x1B[0m", e);
+        failures += 1;
+    } else {
+        // Test write permission
+        let test_file = data_dir.join(".doctor_test");
+        if fs::write(&test_file, b"test").is_err() {
+            println!("\x1B[1;31m[FAIL] (Directory is not writable)\x1B[0m");
+            failures += 1;
+        } else {
+            let _ = fs::remove_file(&test_file);
+            println!("\x1B[1;32m[PASS]\x1B[0m");
+        }
+    }
+
+    // 2. Check database integrity
+    if let Some(path) = get_db_file_path() {
+        print!("Checking database file {:?}... ", path);
+        let _ = io::stdout().flush();
+        if path.exists() {
+            match fs::read_to_string(&path) {
+                Ok(content) => {
+                    if serde_json::from_str::<serde_json::Value>(&content).is_ok() {
+                        println!("\x1B[1;32m[PASS]\x1B[0m");
+                    } else {
+                        println!("\x1B[1;31m[FAIL] (Corrupted JSON content)\x1B[0m");
+                        failures += 1;
+                    }
+                }
+                Err(e) => {
+                    println!("\x1B[1;31m[FAIL] (Cannot read file: {})\x1B[0m", e);
+                    failures += 1;
+                }
+            }
+        } else {
+            println!("\x1B[1;33m[WARN] (File does not exist yet; will be created on start)\x1B[0m");
+        }
+    }
+
+    // 3. Check port availability
+    let port = get_port();
+    print!("Checking web port {} availability... ", port);
+    let _ = io::stdout().flush();
+    if std::net::TcpListener::bind(format!("0.0.0.0:{}", port)).is_ok() {
+        println!("\x1B[1;32m[PASS] (Port is free)\x1B[0m");
+    } else {
+        println!("\x1B[1;33m[WARN] (Port is already bound; server is likely running)\x1B[0m");
+    }
+
+    // 4. Check PIN setup
+    print!("Checking Security PIN setup... ");
+    let _ = io::stdout().flush();
+    if get_pin().is_some() {
+        println!("\x1B[1;32m[SET] (PIN is configured)\x1B[0m");
+    } else {
+        println!("\x1B[1;33m[WARN] (No PIN configured; authentication is disabled)\x1B[0m");
+    }
+
+    println!();
+    if failures == 0 {
+        println!("\x1B[1;32mDoctor report: System is healthy and configured correctly.\x1B[0m");
+    } else {
+        println!("\x1B[1;31mDoctor report: Found {} error(s). Please check logs or configurations.\x1B[0m", failures);
+    }
+}
+
+fn run_start() {
+    println!("Starting {} server...", APP_NAME);
+    let port = get_port();
+    
+    // Check if server is already running
+    if std::net::TcpListener::bind(format!("0.0.0.0:{}", port)).is_err() {
+        println!("\x1B[1;33mWarning: Port {} is already in use. Server is likely already running.\x1B[0m", port);
+        println!("If you are inside a container, the server runs automatically.");
+        return;
+    }
+
+    // Attempt to execute the backend server binary
+    let server_path = if Path::new("/app/server").exists() {
+        "/app/server"
+    } else if Path::new("./target/release/server").exists() {
+        "./target/release/server"
+    } else if Path::new("./server").exists() {
+        "./server"
+    } else {
+        "server"
+    };
+
+    println!("Spawning server process: {}", server_path);
+    let mut child = match Command::new(server_path).spawn() {
+        Ok(c) => c,
+        Err(e) => {
+            println!("\x1B[1;31mError: Failed to spawn server binary: {}\x1B[0m", e);
+            return;
+        }
+    };
+
+    println!("Server process started with PID {}.", child.id());
+    println!("Console will now exit.");
+}
+
+fn run_end() {
+    println!("Stopping {} server process...", APP_NAME);
+    
+    let mut stopped = false;
+    
+    // Attempt graceful shutdown via pkill
+    if Command::new("pkill").arg("-15").arg("server").status().is_ok() {
+        println!("Sent SIGTERM shutdown signal to server processes.");
+        stopped = true;
+    } else {
+        // Fallback: kill container init process (PID 1)
+        if Command::new("kill").arg("-15").arg("1").status().is_ok() {
+            println!("Sent SIGTERM to container init process (PID 1).");
+            stopped = true;
+        }
+    }
+    
+    if !stopped {
+        println!("\x1B[1;31mError: Could not stop server. Process command 'pkill' / 'kill' failed.\x1B[0m");
     }
 }
 
@@ -317,6 +452,15 @@ fn handle_cli_args(args: &[String]) {
         "env" | "--env" => {
             print_env();
         }
+        "doctor" => {
+            run_doctor();
+        }
+        "start" => {
+            run_start();
+        }
+        "end" | "close" => {
+            run_end();
+        }
         "data" => {
             if args.len() > 2 {
                 match args[2].as_str() {
@@ -362,6 +506,7 @@ fn run_tui() {
         
         let options = [
             "Show Full Configuration Settings",
+            "Run System Diagnostics (Doctor)",
             "View Database Statistics",
             "List Database/Files Content",
             "Reset / Clear Application State",
@@ -390,7 +535,7 @@ fn run_tui() {
         if bytes_read == 1 {
             match key_buf[0] {
                 13 | 10 => { // Enter
-                    if menu_selection == 4 {
+                    if menu_selection == 5 {
                         break;
                     }
                     execute_tui_option(menu_selection);
@@ -399,7 +544,8 @@ fn run_tui() {
                 b'2' => execute_tui_option(1),
                 b'3' => execute_tui_option(2),
                 b'4' => execute_tui_option(3),
-                b'5' => break,
+                b'5' => execute_tui_option(4),
+                b'6' => break,
                 b'q' => break,
                 _ => {}
             }
@@ -409,11 +555,11 @@ fn run_tui() {
                     if menu_selection > 0 {
                         menu_selection -= 1;
                     } else {
-                        menu_selection = 4;
+                        menu_selection = 5;
                     }
                 }
                 66 => { // Down Arrow
-                    if menu_selection < 4 {
+                    if menu_selection < 5 {
                         menu_selection += 1;
                     } else {
                         menu_selection = 0;
@@ -442,12 +588,15 @@ fn execute_tui_option(index: usize) {
             print_env();
         }
         1 => {
-            print_data_stats();
+            run_doctor();
         }
         2 => {
-            list_data_contents();
+            print_data_stats();
         }
         3 => {
+            list_data_contents();
+        }
+        4 => {
             clear_data();
         }
         _ => {}
