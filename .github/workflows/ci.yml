@@ -61,21 +61,22 @@ jobs:
           tags: snake-alpine:test
           platforms: linux/amd64
 
-      - name: Smoke test (health endpoint)
+      - name: Smoke test (root URL responds 200)
         run: |
-          docker run --rm -d --name snake-smoke -p 4501:4501 snake-alpine:test
+          docker run --rm -d --name snake-smoke -p 8080:4501 snake-alpine:test
           for i in $(seq 1 30); do
-            if curl -fsS "http://127.0.0.1:4501/health" >/dev/null 2>&1; then
-              echo "health check passed"
+            if curl -fsS "http://127.0.0.1:8080/" >/dev/null 2>&1; then
+              echo "root URL check passed"
               docker stop snake-smoke
               exit 0
             fi
             sleep 2
           done
-          echo "health check failed after 60s"
+          echo "root URL check failed after 60s"
           docker logs snake-smoke || true
           docker stop snake-smoke
           exit 1
+
 
   build-and-push-container:
     name: build-and-push-container
