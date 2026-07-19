@@ -118,10 +118,9 @@ COPY --from=builder /src/frontend/dist /app/frontend/dist
 # /app (binary + frontend bundle) and /config (data dir) to 99:100, and
 # make the frontend bundle writable so the runtime generator can write
 # into /app/frontend/dist/assets/.
- && chown -R 99:100 /app /config \
+RUN chown -R 99:100 /app /config \
  && chmod -R u+w /app/frontend/dist
 
-# Rustle's source code references 'dist/' (without the 'frontend/'
 # Rustle's source code references 'dist/' (without the 'frontend/'
 # prefix). Symlink so the path resolves either way.
 RUN mkdir -p /app/data \
