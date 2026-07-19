@@ -25,6 +25,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         run: wget -qO- https://github.com/wasm-bindgen/wasm-bindgen/releases/download/0.2.121/wasm-bindgen-0.2.121-x86_64-unknown-linux-musl.tar.gz | sudo tar -xzf- --strip-components=1 -C /usr/local/bin
 
+
       - name: Build Frontend
         working-directory: frontend
         run: trunk build --release
@@ -35,10 +36,49 @@ jobs:
       - name: Cargo Test
         run: cargo test --workspace
 
+  alpine-build:
+    name: alpine-build
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Alpine container
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Containerfile.ubi
+          push: false
+          tags: snake-alpine:test
+          platforms: linux/amd64
+
+      - name: Smoke test (health endpoint)
+        run: |
+          docker run --rm -d --name snake-smoke -p 4501:4501 snake-alpine:test
+          for i in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:4501/health" >/dev/null 2>&1; then
+              echo "health check passed"
+              docker stop snake-smoke
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "health check failed after 60s"
+          docker logs snake-smoke || true
+          docker stop snake-smoke
+          exit 1
+
   build-and-push-container:
     name: build-and-push-container
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [build-and-test, alpine-build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       packages: write

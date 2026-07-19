@@ -1,53 +1,76 @@
 # =============================================================================
-# snake — UBI container image (Red Hat Universal Base Image)
+# snake — Alpine container image
 # =============================================================================
-# What you ship: ubi9/ubi-minimal runtime (RHEL-family RPM userspace).
-# Build stage: rust official image (reliable wasm32 + trunk). Runtime is pure UBI.
+# Build stage: rust:alpine (musl libc).
+# Runtime stage: alpine (musl libc) — same userspace as the build, so the
+# dynamically-linked backend binary runs natively.
 #
 # Build (Podman):
 #   cd ~/projects/studio2201/snake
-#   podman build -f Containerfile.ubi -t snake-ubi:latest .
+#   podman build -f Containerfile.ubi -t snake:latest .
 #
 # Run:
 #   podman run --rm -p 4501:4501 \
 #     -e SNAKE_PIN= \
 #     -e BASE_URL=http://localhost:4501 \
 #     -e ALLOWED_ORIGINS='*' \
-#     -v snake-data:/app/data:Z \
-#     snake-ubi:latest
+#     -v snake-data:/app/data \
+#     snake:latest
 #
 
 # Compare size:
-#   podman images | grep -E 'snake-ubi|studio2201/snake'
+#   podman images | grep -E 'snake|studio2201/snake'
 # =============================================================================
 
-# ---------- build: compile backend + WASM frontend ----------
-# Official Rust image + rustup (matches rust-toolchain.toml). This stage is
-# discarded; only the binary and frontend/dist are copied into UBI.
-FROM docker.io/library/rust:bookworm AS builder
+# ---------- build: Alpine + musl ----------
+FROM docker.io/library/rust:alpine AS builder
+
+# Build-time deps. git fetches the shared-assets git dep; musl-dev/pkgconf
+# support any crates that need C compilation.
+RUN apk add --no-cache \
+        bash \
+        ca-certificates \
+        curl \
+        git \
+        musl-dev \
+        pkgconf
 
 WORKDIR /src
 COPY rust-toolchain.toml ./
 
-# Install the exact channel from rust-toolchain.toml (1.96 + wasm32)
+# Install the toolchain pinned in rust-toolchain.toml + the wasm32 target.
 RUN rustup show \
- && rustup target add wasm32-unknown-unknown \
- && cargo install trunk wasm-bindgen-cli --locked
+ && rustup target add wasm32-unknown-unknown
 
-# Cache deps: copy manifests first
+# Install trunk and wasm-bindgen-cli from prebuilt musl binaries (fast).
+ARG TRUNK_VERSION=0.21.3
+RUN curl -sSfL -o /tmp/trunk.tar.gz \
+        "https://github.com/trunk-rs/trunk/releases/download/v${TRUNK_VERSION}/trunk-x86_64-unknown-linux-musl.tar.gz" \
+ && tar -xzf /tmp/trunk.tar.gz -C /usr/local/bin/ \
+ && chmod +x /usr/local/bin/trunk \
+ && rm /tmp/trunk.tar.gz
+
+ARG WASM_BINDGEN_VERSION=0.2.121
+RUN curl -sSfL -o /tmp/wb.tar.gz \
+        "https://github.com/wasm-bindgen/wasm-bindgen/releases/download/${WASM_BINDGEN_VERSION}/wasm-bindgen-${WASM_BINDGEN_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+ && tar -xzf /tmp/wb.tar.gz -C /tmp/ \
+ && mv /tmp/wasm-bindgen-${WASM_BINDGEN_VERSION}-x86_64-unknown-linux-musl/wasm-bindgen /usr/local/bin/wasm-bindgen \
+ && chmod +x /usr/local/bin/wasm-bindgen \
+ && rm -rf /tmp/wb.tar.gz /tmp/wasm-bindgen-${WASM_BINDGEN_VERSION}-x86_64-unknown-linux-musl
+# Cache deps: copy manifests first.
 COPY Cargo.toml Cargo.lock ./
 COPY backend/Cargo.toml backend/Cargo.toml
 COPY frontend/Cargo.toml frontend/Cargo.toml
 
-# Dummy sources so the dependency layer can compile without full sources
+# Dummy sources so the dependency layer can compile without full sources.
 RUN mkdir -p backend/src frontend/src \
  && echo 'fn main() {}' > backend/src/main.rs \
  && echo 'fn main() {}' > frontend/src/main.rs
 
-# Fetch crates (needs network for crates.io + shared-assets git tag)
+# Fetch crates (needs network for crates.io + shared-assets git tag).
 RUN cargo fetch
 
-# Real sources (includes assets/shared-assets styles for trunk)
+# Real sources (includes assets/shared-assets styles for trunk).
 COPY assets assets
 COPY backend backend
 COPY frontend frontend
@@ -58,29 +81,31 @@ RUN trunk build --release
 
 WORKDIR /src
 RUN cargo build --release -p backend \
- && strip target/release/backend || true
+ && strip /src/target/release/backend
 
-# ---------- runtime: Red Hat UBI Minimal ----------
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+# ---------- runtime: Alpine ----------
+FROM docker.io/library/alpine:3.20
 
 LABEL org.opencontainers.image.title="snake" \
-      org.opencontainers.image.description="snake (UBI9 minimal pilot)" \
+      org.opencontainers.image.description="snake (Alpine, built on Alpine)" \
       org.opencontainers.image.source="https://github.com/studio2201/snake" \
-      org.opencontainers.image.base.name="registry.access.redhat.com/ubi9/ubi-minimal"
+      org.opencontainers.image.base.name="docker.io/library/alpine:3.20"
 
-# ca-certificates for HTTPS outbound; wget for HEALTHCHECK.
-# UBI already has GID 100 (users); only create UID 99 if missing (Unraid-style).
-RUN microdnf install -y ca-certificates wget shadow-utils \
- && microdnf clean all \
- && (getent passwd 99 >/dev/null || useradd -u 99 -g 100 -M -d /app -s /sbin/nologin app) \
+# Runtime deps: ca-certificates for outbound HTTPS, wget for HEALTHCHECK,
+# tini for proper signal handling.
+RUN apk add --no-cache \
+        ca-certificates \
+        tini \
+        wget \
+ && adduser -u 99 -G users -h /app -s /sbin/nologin -D app \
  && mkdir -p /app/data /app/frontend/dist \
- && chown -R 99:100 /app
+ && chown -R app:users /app
 
 COPY --from=builder /src/target/release/backend /app/backend
 COPY --from=builder /src/frontend/dist /app/frontend/dist
 
 WORKDIR /app
-USER 99:100
+USER 99
 
 ENV PORT=4501 \
     RUST_LOG=info
@@ -90,4 +115,5 @@ EXPOSE 4501
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:${PORT:-4501}/health" >/dev/null || exit 1
 
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["/app/backend"]
