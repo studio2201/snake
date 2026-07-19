@@ -224,7 +224,7 @@ fn run_start() {
     };
 
     println!("Spawning server process: {}", server_path);
-    let mut child = match Command::new(server_path).spawn() {
+    let child = match Command::new(server_path).spawn() {
         Ok(c) => c,
         Err(e) => {
             println!("\x1B[1;31mError: Failed to spawn server binary: {}\x1B[0m", e);
