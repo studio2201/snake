@@ -308,6 +308,9 @@ fn clear_data() {
 
 fn handle_cli_args(args: &[String]) {
     match args[1].as_str() {
+        "version" | "--version" | "-v" => {
+            println!("{} version: v{}", APP_NAME, env!("CARGO_PKG_VERSION"));
+        }
         "status" | "--status" => {
             print_status();
         }
