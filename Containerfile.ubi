@@ -5,7 +5,7 @@
 # Build stage: rust official image (reliable wasm32 + trunk). Runtime is pure UBI.
 #
 # Build (Podman):
-#   cd ~/projects/dachoras/snake
+#   cd ~/projects/studio2201/snake
 #   podman build -f Containerfile.ubi -t snake-ubi:latest .
 #
 # Run:
@@ -18,7 +18,7 @@
 #
 
 # Compare size:
-#   podman images | grep -E 'snake-ubi|dachoras/snake'
+#   podman images | grep -E 'snake-ubi|studio2201/snake'
 # =============================================================================
 
 # ---------- build: compile backend + WASM frontend ----------
@@ -65,7 +65,7 @@ FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 
 LABEL org.opencontainers.image.title="snake" \
       org.opencontainers.image.description="snake (UBI9 minimal pilot)" \
-      org.opencontainers.image.source="https://github.com/UberMetroid/snake" \
+      org.opencontainers.image.source="https://github.com/studio2201/snake" \
       org.opencontainers.image.base.name="registry.access.redhat.com/ubi9/ubi-minimal"
 
 # ca-certificates for HTTPS outbound; wget for HEALTHCHECK.

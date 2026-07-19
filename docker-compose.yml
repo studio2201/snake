@@ -1,6 +1,6 @@
 # Snake docker-compose.
 #
-# This file ships a complete, runnable recipe for the `ghcr.io/dachoras/snake`
+# This file ships a complete, runnable recipe for the `ghcr.io/studio2201/snake`
 # image (UBI container from GHCR
 # host shell env or a `.env` file in the same directory.
 #
@@ -35,9 +35,9 @@
 services:
   snake:
     # (1) MANDATORY: image to run. Pulled from GHCR. To use a
-    # locally-built image instead, replace with `image: ghcr.io/dachoras/snake:latest`
+    # locally-built image instead, replace with `image: ghcr.io/studio2201/snake:latest`
     # after `podman build -f Containerfile.ubi
-    image: ghcr.io/dachoras/snake:latest
+    image: ghcr.io/studio2201/snake:latest
     container_name: snake
     restart: unless-stopped
 

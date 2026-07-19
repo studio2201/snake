@@ -73,4 +73,4 @@ Carried over from upstream fork (pad/notepad). Pre-refactor state.
 
 ## [1.0.25]
 
-Initial release under the UberMetroid organisation.
+Initial release under the studio2201 organisation.

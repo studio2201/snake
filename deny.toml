@@ -1,4 +1,4 @@
-# cargo-deny configuration for the UberMetroid companion apps.
+# cargo-deny configuration for the studio2201 companion apps.
 # Enforces supply-chain and license safety on all dependencies.
 
 [graph]
