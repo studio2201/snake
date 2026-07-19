@@ -1,75 +1,65 @@
+<p align="center">
+  <a href="https://github.com/studio2201">
+    <img src="assets/header.jpg" alt="studio2201 banner" width="100%">
+  </a>
+</p>
+
 # <img src="assets/icon.png" width="32" height="32" valign="middle"> Snake
 
-Traditional arcade snake game.
+Self-hosted terminal-classic snake game with global highscore leaderboards.
+
+## Quick Start (Docker)
+
+Pull and run the official Docker container:
+```bash
+docker run -d \
+  -p 4501:4501 \
+  -v /path/to/appdata:/config \
+  -e SNAKE_PIN=your_secret_pin \
+  ghcr.io/studio2201/snake:latest
+```
 
 ## Configuration
 
-This application can be configured using the following environment variables:
+The service can be customized using the following container environment variables:
 
-| Environment Variable | Description | Default |
-|---|---|---|
-| `PORT` | The port number the backend HTTP server will bind to. | `4501` |
-| `SNAKE_PIN` | Optional PIN to restrict access to the application interface. | (None) |
-| `SNAKE_DATA_DIR` / `DATA_DIR` | Path to the directory where application data and database files are stored. | `data` / `/config` |
-| `SNAKE_ALLOWED_ORIGINS` / `ALLOWED_ORIGINS` | Comma-separated list of allowed CORS origins, or `*` to allow all. | `*` |
-| `TZ` | Timezone configuration used for logs and local container events. | `UTC` |
-| `TRUST_PROXY` | Set to `true` if the backend is hosted behind a reverse proxy (e.g. Nginx, Cloudflare). | `false` |
-| `TRUSTED_PROXY_IPS` | Comma-separated list of trusted upstream proxy IP addresses or CIDR blocks. | (None) |
-| `LOG_DIR` | Directory path where backend application logs will be written. | (None) |
-| `LOG_LEVEL` | Logging verbosity level (`trace`, `debug`, `info`, `warn`, `error`). | `info` |
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `PORT` | The network port the web server binds to | `4501` |
+| `SNAKE_PIN` | Security PIN code required for client authentication | (None) |
+| `SNAKE_DATA_DIR` | Directory path where persistent data is stored | `/config` |
+| `SNAKE_ALLOWED_ORIGINS` | CORS allowed origins list (comma-separated) | `*` |
+| `TZ` | System timezone | `UTC` |
+| `TRUST_PROXY` | Whether to honor upstream reverse proxy headers | `false` |
+| `TRUSTED_PROXY_IPS` | Comma-separated CIDR/IP list of trusted reverse proxies | (None) |
+| `LOG_DIR` | Directory where diagnostic log files are written | (Disabled) |
+| `LOG_LEVEL` | Logging verbosity filter (`error`, `warn`, `info`, `debug`) | `info` |
 
 ## Administration Console (CLI & TUI)
 
-The application includes an administration console that can be run interactively as a Terminal User Interface (TUI) or non-interactively via command-line arguments.
-
-### Launching the interactive TUI
-To start the interactive TUI dashboard, run the shell helper with no arguments:
+Each container includes a built-in admin tool located in the system path as `snake`. To open the console, execute a shell inside the container:
 ```bash
-/app/sh
+docker exec -it <container-name> sh
 ```
-Inside the TUI menu, you can navigate options using the **Up/Down Arrow Keys** and select options with **Enter**.
-
-### CLI Commands & Aliases
-You can also run commands directly from the command line:
+Then, run `snake` to manage the application:
 ```bash
-/app/sh [command]
+snake [command]
 ```
+Running `snake` without arguments or running `snake tui` launches the interactive terminal user interface.
 
-The supported commands and their aliases include:
-- `doctor` (aliases: `check`, `diagnose`): Perform system health check and write permission checks on data folders.
-- `start` (aliases: `up`, `run`): Start the application backend server process.
-- `stop` (aliases: `down`, `end`, `close`): Gracefully stop the application backend server.
-- `restart` (alias: `reload`): Restart the application backend server.
-- `data stats` (alias: `data size`): Display current storage and database space usage statistics.
-- `data list` (alias: `data show`): View list of records stored in the database.
-- `data clear` (aliases: `data prune`, `data reset`): Completely delete application database/storage to reset state.
-- `version`: Show the current version of the application.
-- `status` (alias: `info`): Show running status of background processes.
-- `env`: List all configured environment variables.
+### CLI Commands
 
-## Quick Start
-
-### Self-Hosting (Docker)
-Pull and run the official Docker container:
-```bash
-docker run -d -p 4501:4501 -v /path/to/appdata:/app/data ghcr.io/studio2201/snake:latest
-```
-
-### Local Development
-To run this application locally from source:
-
-1. **Prerequisites**: Ensure you have Rust and `trunk` (for frontend building) installed:
-   ```bash
-   cargo install --locked trunk
-   rustup target add wasm32-unknown-unknown
-   ```
-2. **Build and Run Frontend**:
-   ```bash
-   cd frontend
-   trunk build
-   ```
-3. **Build and Run Backend**:
-   ```bash
-   cd backend
-   cargo run
-   ```
+| Command | Aliases | Description |
+| :--- | :--- | :--- |
+| `tui` | (Default) | Launch the interactive arrow-key TUI panel dashboard |
+| `doctor` | `check`, `diagnose` | Perform health diagnostics on directories, port, and databases |
+| `start` | `up`, `run` | Launch the main web server process if stopped |
+| `stop` | `down`, `terminate`, `close` | Gracefully shut down the web server (stops the container) |
+| `restart` | `reload` | Perform a stop and start cycle on the server process |
+| `status` | `info` | Display current network and settings configurations |
+| `env` | | List the loaded environment variables for the service |
+| `version` | `-v`, `--version` | Display the compiled version of the application |
+| `data stats` | `data size`, `data info` | View storage file sizes and entry counts |
+| `data list` | `data show`, `data view` | Show records (tasks, high scores, etc.) stored in the database |
+| `data clear` | `data prune`, `data reset` | Reset the database to a clean, empty state (interactive) |
+| `help` | `-h`, `--help` | Show the help information page |
