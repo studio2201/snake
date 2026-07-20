@@ -58,7 +58,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Containerfile.ubi
+          file: Containerfile
           push: false
           load: true
           tags: snake-alpine:test
@@ -121,7 +121,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: Containerfile.ubi
+          file: Containerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
