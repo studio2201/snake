@@ -12,7 +12,12 @@ const DB_FILE_NAME: &str = "leaderboard.json";
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() > 1 {
-        handle_cli_args(&args);
+        let cmd = args[1].to_lowercase();
+        if cmd == "tui" {
+            run_tui();
+        } else {
+            handle_cli_args(&args);
+        }
     } else {
         run_tui();
     }
