@@ -12,8 +12,8 @@
   <Overview>High-performance multiplayer arcade game server and web application built in Rust.</Overview>
   <Category>Game:Arcade Network:Web</Category>
   <WebUI>http://[IP]:[PORT:4501]/</WebUI>
-  <TemplateURL>https://raw.githubusercontent.com/studio2201/unraid-templates/main/templates/snake.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/studio2201/unraid-templates/main/icons/snake.png</Icon>
+  <TemplateURL>https://raw.githubusercontent.com/studio2201/unraid-templates/master/templates/snake.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/studio2201/unraid-templates/master/icons/snake.png</Icon>
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
