@@ -22,7 +22,7 @@ use shared_backend::server::get_client_ip;
 use std::net::SocketAddr;
 use std::time::Duration;
 
-use super::cookie::build_auth_cookie;
+
 use crate::error::AppError;
 use crate::services::session::generate_session_id;
 use crate::state::AppState;
@@ -122,8 +122,9 @@ pub async fn verify_pin(
     let session_id = generate_session_id();
     state.register_session(session_id.clone()).await;
 
-    let secure = cookie_should_be_secure(&headers, &state.config.server.base_url);
-    let cookie = build_auth_cookie(
+    let secure = shared_backend::cookie_auth::cookie_should_be_secure(&headers, &state.config.server.base_url);
+    let cookie = shared_backend::cookie_auth::build_cookie(
+        super::COOKIE_NAME,
         &session_id,
         state.config.server.cookie_max_age_hours,
         secure,
@@ -138,41 +139,4 @@ pub async fn verify_pin(
     );
 
     Ok((jar, Json(serde_json::json!({ "success": true }))).into_response())
-}
-
-/// Decide whether the cookie should be marked `Secure`. We trust:
-/// 1. the `X-Forwarded-Proto: https` header (when `trust_proxy` is set), and
-/// 2. the configured `base_url` as a fallback.
-fn cookie_should_be_secure(headers: &HeaderMap, base_url: &str) -> bool {
-    headers
-        .get("x-forwarded-proto")
-        .and_then(|v| v.to_str().ok())
-        .is_some_and(|v| v.eq_ignore_ascii_case("https"))
-        || base_url.starts_with("https")
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn cookie_secure_via_xfp() {
-        let mut h = HeaderMap::new();
-        h.insert("x-forwarded-proto", "https".parse().unwrap());
-        assert!(cookie_should_be_secure(&h, "http://example.com"));
-    }
-
-    #[test]
-    fn cookie_secure_via_base_url() {
-        let h = HeaderMap::new();
-        assert!(cookie_should_be_secure(&h, "https://snake.example"));
-        assert!(!cookie_should_be_secure(&h, "http://snake.example"));
-    }
-
-    #[test]
-    fn cookie_secure_handles_uppercase_https_header() {
-        let mut h = HeaderMap::new();
-        h.insert("x-forwarded-proto", "HTTPS".parse().unwrap());
-        assert!(cookie_should_be_secure(&h, "http://snake.example"));
-    }
 }
