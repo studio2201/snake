@@ -1,5 +1,3 @@
-mod cookie_auth;
-mod session_id;
 //! Snake backend library entrypoint.
 //!
 //! The crate is structured so that `main.rs` is a thin orchestration shell
@@ -20,6 +18,8 @@ mod session_id;
 //! - [`routes`] — axum handlers and middleware, grouped by area
 
 #![deny(unsafe_code)]
+mod cookie_auth;
+mod session_id;
 
 pub mod bootstrap;
 pub mod config;
