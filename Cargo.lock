@@ -2001,8 +2001,8 @@ dependencies = [
 
 [[package]]
 name = "shared-backend"
-version = "3.0.35"
-source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.35#24d4c8dcf8840274bdb3a163cc27f74a5f94d54a"
+version = "3.0.36"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.36#5af127c009331250a3cebf0f6970ee0dab0289a6"
 dependencies = [
  "anyhow",
  "axum",
@@ -2015,6 +2015,7 @@ dependencies = [
  "rand 0.9.5",
  "rusqlite",
  "serde",
+ "serde_json",
  "shared-core",
  "thiserror 2.0.18",
  "time",
@@ -2026,8 +2027,8 @@ dependencies = [
 
 [[package]]
 name = "shared-core"
-version = "3.0.35"
-source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.35#24d4c8dcf8840274bdb3a163cc27f74a5f94d54a"
+version = "3.0.36"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.36#5af127c009331250a3cebf0f6970ee0dab0289a6"
 dependencies = [
  "constant_time_eq 0.3.1",
  "serde",
@@ -2035,8 +2036,8 @@ dependencies = [
 
 [[package]]
 name = "shared-frontend"
-version = "3.0.35"
-source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.35#24d4c8dcf8840274bdb3a163cc27f74a5f94d54a"
+version = "3.0.36"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.36#5af127c009331250a3cebf0f6970ee0dab0289a6"
 dependencies = [
  "js-sys",
  "serde",
