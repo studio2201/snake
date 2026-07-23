@@ -86,7 +86,7 @@ mod tests {
     use tokio::sync::{Mutex, RwLock};
 
     fn build_state(tmp: &TempDir, leaderboard_exists: bool) -> AppState {
-        let mut server = shared_backend::server::ServerConfig::from_env(crate::config::APP_BRAND);
+        let mut server = crate::config::AppConfig::load();
         server.base_url = "http://localhost:4501".to_string();
         let cfg = AppConfig {
             server,
@@ -135,7 +135,7 @@ mod tests {
         // other handle exists yet at this point).
         let blocking_file = tmp.path().join("blocker");
         std::fs::write(&blocking_file, b"x").expect("blocker");
-        let mut server = shared_backend::server::ServerConfig::from_env(crate::config::APP_BRAND);
+        let mut server = crate::config::AppConfig::load();
         server.base_url = "http://localhost:4501".to_string();
         let cfg = AppConfig {
             server,

@@ -58,7 +58,7 @@ mod tests {
         metrics.inc_requests();
         metrics.inc_requests();
 
-        let mut server = shared_backend::server::ServerConfig::from_env(crate::config::APP_BRAND);
+        let mut server = crate::config::AppConfig::load();
         server.base_url = "http://localhost:4501".to_string();
         let cfg = AppConfig {
             server,

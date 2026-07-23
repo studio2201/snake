@@ -107,7 +107,7 @@ mod tests {
         let leaderboard = crate::services::paths::leaderboard_file(dir);
         Arc::new(AppStateInner {
             config: AppConfig {
-                server: shared_backend::server::ServerConfig::from_env(crate::config::APP_BRAND),
+                server: crate::config::AppConfig::load(),
                 page_history_cookie_age_days: 1,
                 node_env: "test".to_string(),
                 version: "test".to_string(),

@@ -4,7 +4,7 @@ use axum::extract::{ConnectInfo, Request, State};
 use axum::http::StatusCode;
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
-use shared_backend::server::get_client_ip;
+use crate::ip::get_client_ip;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 use crate::state::AppState;
@@ -47,7 +47,7 @@ fn client_ip_from_request(req: &Request, addr: Option<SocketAddr>, state: &AppSt
     get_client_ip(
         req.headers(),
         fallback,
-        state.config.server.trust_proxy,
-        &state.config.server.trusted_proxies,
+        state.config.trust_proxy,
+        &state.config.trusted_proxies,
     )
 }

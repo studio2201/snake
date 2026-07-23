@@ -19,6 +19,7 @@
 
 #![deny(unsafe_code)]
 mod cookie_auth;
+mod ip;
 mod session_id;
 
 pub mod bootstrap;

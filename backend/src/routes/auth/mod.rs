@@ -41,7 +41,7 @@ pub const COOKIE_NAME: &str = "SNAKE_PIN";
 /// When no PIN is configured (auth disabled), every request is considered
 /// authenticated so handlers can run unconditionally.
 pub async fn is_authenticated(jar: &CookieJar, state: &AppState, headers: &HeaderMap) -> bool {
-    let Some(pin) = state.config.server.pin.as_ref() else {
+    let Some(pin) = state.config.pin.as_ref() else {
         return true;
     };
 
@@ -69,7 +69,7 @@ mod tests {
     use tokio::sync::{Mutex, RwLock};
 
     fn build_state(pin: Option<&str>) -> AppState {
-        let mut server = shared_backend::server::ServerConfig::from_env(crate::config::APP_BRAND);
+        let mut server = crate::config::AppConfig::load();
         server.pin = pin.map(|s| s.to_string());
         let cfg = AppConfig {
             server,

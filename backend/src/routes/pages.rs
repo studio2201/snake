@@ -30,7 +30,7 @@ async fn render_index(state: &AppState) -> Result<Response, AppError> {
         );
         AppError::Io(e)
     })?;
-    let rendered = html.replace("{{SITE_TITLE}}", &state.config.server.site_title);
+    let rendered = html.replace("{{SITE_TITLE}}", &state.config.site_title);
 
     let mut headers = HeaderMap::new();
     headers.insert(

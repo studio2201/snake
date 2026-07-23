@@ -6,7 +6,7 @@
 //!
 //! ## PIN length policy
 //!
-//! The shared [`shared_backend::server::ServerConfig::pin`] field enforces
+//! The shared [`crate::config::AppConfig::pin`] field enforces
 //! the same 4-64 character window, so any value the backend accepts is
 //! also a value the operator chose deliberately. The frontend today only
 //! presents a 4-digit numeric PIN, but the wider range is supported for
@@ -18,7 +18,7 @@ use axum::http::{HeaderMap, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum_extra::extract::cookie::CookieJar;
 use shared_backend::auth::attempts;
-use shared_backend::server::get_client_ip;
+use crate::ip::get_client_ip;
 use std::net::SocketAddr;
 use std::time::Duration;
 
@@ -47,7 +47,7 @@ pub async fn verify_pin(
     State(state): State<AppState>,
     Json(payload): Json<VerifyPinPayload>,
 ) -> Result<Response, AppError> {
-    let Some(expected_pin) = state.config.server.pin.clone() else {
+    let Some(expected_pin) = state.config.pin.clone() else {
         // No PIN configured — nothing to verify; emit a 200 with no cookie.
         return Ok((StatusCode::OK, Json(serde_json::json!({ "success": true }))).into_response());
     };
@@ -55,11 +55,11 @@ pub async fn verify_pin(
     let ip_str = get_client_ip(
         &headers,
         addr,
-        state.config.server.trust_proxy,
-        &state.config.server.trusted_proxies,
+        state.config.trust_proxy,
+        &state.config.trusted_proxies,
     );
-    let max_attempts = state.config.server.max_attempts;
-    let lockout_dur = Duration::from_secs(state.config.server.lockout_time_minutes * 60);
+    let max_attempts = state.config.max_attempts;
+    let lockout_dur = Duration::from_secs(state.config.lockout_time_minutes * 60);
 
     if attempts::is_locked_out(&ip_str, max_attempts, lockout_dur) {
         let remaining = attempts::lockout_remaining_secs(&ip_str, lockout_dur);
@@ -122,9 +122,9 @@ pub async fn verify_pin(
     let session_id = generate_session_id();
     state.register_session(session_id.clone()).await;
 
-    let secure = crate::cookie_auth::cookie_should_be_secure(&headers, &state.config.server.base_url);
+    let secure = crate::cookie_auth::cookie_should_be_secure(&headers, &state.config.base_url);
     let cookie = crate::cookie_auth::build_cookie(&session_id,
-        state.config.server.cookie_max_age_hours,
+        state.config.cookie_max_age_hours,
         secure,
     );
     let jar = jar.add(cookie);

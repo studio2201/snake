@@ -32,7 +32,7 @@ pub fn assert_origin_allowed(
         }
         return Err(Box::new(oc::forbidden_response()));
     }
-    let base = state.config.server.base_url.as_str();
+    let base = state.config.base_url.as_str();
     let is_same_origin = if let Some(host) = req
         .headers()
         .get(header::HOST)

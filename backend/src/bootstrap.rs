@@ -93,7 +93,7 @@ pub fn build_state(config: AppConfig) -> AppState {
         target: "bootstrap",
         data_dir = %state.data_dir.display(),
         web_root = %state.web_root.display(),
-        pin_enabled = state.config.server.pin_enabled(),
+        pin_enabled = state.config.pin_enabled(),
         "state initialised"
     );
     // Log the leaderboard file location at startup so operators know

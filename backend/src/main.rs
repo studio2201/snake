@@ -24,7 +24,7 @@ async fn main() {
         port = runtime.port,
         version = %runtime.state.config.version,
         environment = %runtime.state.config.node_env,
-        base_url = %runtime.state.config.server.base_url,
+        base_url = %runtime.state.config.base_url,
         "snake backend ready"
     );
 

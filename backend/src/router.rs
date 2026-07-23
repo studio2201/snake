@@ -45,7 +45,7 @@ async fn metrics_counter_middleware(
 /// directory (the `ServeDir` fallback serves anything not handled by an
 /// explicit route from there).
 pub fn build_router(state: AppState, web_root: &Path) -> Router {
-    let server_config = Arc::new(state.config.server.clone());
+    let server_config = Arc::new(state.config.clone());
     let cors = cors_layer(&server_config);
 
     // Gated sub-router: leaderboard POST/GET requires a valid session,

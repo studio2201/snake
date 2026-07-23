@@ -36,7 +36,7 @@ pub async fn serve_manifest(State(state): State<AppState>) -> Response {
                 error = %e,
                 "manifest missing; returning built-in fallback"
             );
-            return rendered_response(fallback_manifest(&state.config.server.site_title));
+            return rendered_response(fallback_manifest(&state.config.site_title));
         }
     };
 
@@ -49,12 +49,12 @@ pub async fn serve_manifest(State(state): State<AppState>) -> Response {
                 error = %e,
                 "manifest unparseable; returning built-in fallback"
             );
-            return rendered_response(fallback_manifest(&state.config.server.site_title));
+            return rendered_response(fallback_manifest(&state.config.site_title));
         }
     };
 
-    value["name"] = Value::String(state.config.server.site_title.clone());
-    value["short_name"] = Value::String(state.config.server.site_title.clone());
+    value["name"] = Value::String(state.config.site_title.clone());
+    value["short_name"] = Value::String(state.config.site_title.clone());
     value["description"] = Value::String(FALLBACK_DESCRIPTION.to_string());
     rendered_response(value)
 }
