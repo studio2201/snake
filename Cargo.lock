@@ -152,7 +152,7 @@ dependencies = [
 
 [[package]]
 name = "backend"
-version = "1.0.3"
+version = "1.0.6"
 dependencies = [
  "axum",
  "axum-extra",
@@ -452,7 +452,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -496,7 +496,7 @@ dependencies = [
 
 [[package]]
 name = "frontend"
-version = "1.0.3"
+version = "1.0.6"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -1600,7 +1600,7 @@ dependencies = [
  "once_cell",
  "socket2",
  "tracing",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1801,7 +1801,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1976,11 +1976,12 @@ dependencies = [
 
 [[package]]
 name = "shared-backend"
-version = "3.0.30"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.30#a6cfecb3c5d5b57c8c6467af9fb59ab01302011d"
+version = "3.0.33"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.33#5c1f076b40ab66804648a645cc37978056d104f5"
 dependencies = [
  "anyhow",
  "axum",
+ "chrono",
  "constant_time_eq 0.3.1",
  "dotenvy",
  "http-body-util",
@@ -1997,8 +1998,8 @@ dependencies = [
 
 [[package]]
 name = "shared-core"
-version = "3.0.30"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.30#a6cfecb3c5d5b57c8c6467af9fb59ab01302011d"
+version = "3.0.33"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.33#5c1f076b40ab66804648a645cc37978056d104f5"
 dependencies = [
  "constant_time_eq 0.3.1",
  "serde",
@@ -2006,8 +2007,8 @@ dependencies = [
 
 [[package]]
 name = "shared-frontend"
-version = "3.0.30"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.30#a6cfecb3c5d5b57c8c6467af9fb59ab01302011d"
+version = "3.0.33"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.33#5c1f076b40ab66804648a645cc37978056d104f5"
 dependencies = [
  "js-sys",
  "serde",
@@ -2129,7 +2130,7 @@ dependencies = [
  "getrandom 0.4.3",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2724,7 +2725,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
