@@ -152,7 +152,7 @@ dependencies = [
 
 [[package]]
 name = "backend"
-version = "1.0.3"
+version = "1.0.6"
 dependencies = [
  "axum",
  "axum-extra",
@@ -161,7 +161,7 @@ dependencies = [
  "cookie",
  "dotenvy",
  "percent-encoding",
- "rand 0.9.5",
+ "rand 0.10.2",
  "regex",
  "reqwest",
  "serde",
@@ -496,7 +496,7 @@ dependencies = [
 
 [[package]]
 name = "frontend"
-version = "1.0.3"
+version = "1.0.6"
 dependencies = [
  "futures-channel",
  "futures-util",
@@ -1976,11 +1976,12 @@ dependencies = [
 
 [[package]]
 name = "shared-backend"
-version = "3.0.30"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.30#a6cfecb3c5d5b57c8c6467af9fb59ab01302011d"
+version = "3.0.33"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.33#5c1f076b40ab66804648a645cc37978056d104f5"
 dependencies = [
  "anyhow",
  "axum",
+ "chrono",
  "constant_time_eq 0.3.1",
  "dotenvy",
  "http-body-util",
@@ -1997,8 +1998,8 @@ dependencies = [
 
 [[package]]
 name = "shared-core"
-version = "3.0.30"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.30#a6cfecb3c5d5b57c8c6467af9fb59ab01302011d"
+version = "3.0.33"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.33#5c1f076b40ab66804648a645cc37978056d104f5"
 dependencies = [
  "constant_time_eq 0.3.1",
  "serde",
@@ -2006,8 +2007,8 @@ dependencies = [
 
 [[package]]
 name = "shared-frontend"
-version = "3.0.30"
-source = "git+https://github.com/UberMetroid/shared-assets?tag=v3.0.30#a6cfecb3c5d5b57c8c6467af9fb59ab01302011d"
+version = "3.0.33"
+source = "git+https://github.com/studio2201/shared-assets?tag=v3.0.33#5c1f076b40ab66804648a645cc37978056d104f5"
 dependencies = [
  "js-sys",
  "serde",

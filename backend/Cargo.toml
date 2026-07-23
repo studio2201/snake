@@ -49,7 +49,7 @@ sha2 = "0.11"
 # OS RNG for session-id generation. We rely on `OsRng` exclusively (never
 # `thread_rng`'s user-space generator) so an attacker cannot predict session
 # tokens even if they observe the process memory.
-rand = "0.9"
+rand = "0.10"
 # Derive macro for the crate-wide `AppError` enum and its `IntoResponse`
 # mapping; avoids hand-rolling a Display + Error impl.
 thiserror = "2"
