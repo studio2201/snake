@@ -46,7 +46,7 @@ async fn metrics_counter_middleware(
 /// explicit route from there).
 pub fn build_router(state: AppState, web_root: &Path) -> Router {
     let server_config = Arc::new(state.config.clone());
-    let cors = cors_layer(&server_config);
+    let cors = cors_layer(&crate::middleware::CorsState(server_config.clone()));
 
     // Gated sub-router: leaderboard POST/GET requires a valid session,
     // an allow-listed `Origin`, and a fresh rate-limit budget.
@@ -92,10 +92,10 @@ pub fn build_router(state: AppState, web_root: &Path) -> Router {
                 .precompressed_gzip(),
         )
         .layer(middleware::from_fn_with_state(
-            HstsState(server_config.clone()),
+            crate::middleware::HstsState(server_config.clone()),
             hsts_layer,
         ))
-        .layer(middleware::from_fn(security_headers_layer))
+        .layer(middleware::from_fn_with_state(crate::middleware::SecurityHeadersState(server_config.clone()), crate::middleware::security_headers_layer))
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .layer(middleware::from_fn_with_state(

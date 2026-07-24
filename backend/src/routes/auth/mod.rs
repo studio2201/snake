@@ -70,7 +70,7 @@ mod tests {
 
     fn build_state(pin: Option<&str>) -> AppState {
         let mut server = crate::config::AppConfig::load_from_env(4502);
-        server.pin = pin.map(|s| s.to_string());
+        cfg.pin = pin.map(|s| s.to_string());
         let cfg = AppConfig::load_from_env(4502);
         let tmp = TempDir::new().expect("tempdir");
         Arc::new(AppStateInner {

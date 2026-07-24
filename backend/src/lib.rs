@@ -27,6 +27,7 @@ pub mod config;
 pub mod error;
 pub mod metrics;
 pub mod router;
+pub mod middleware;
 pub mod routes;
 pub mod services;
 pub mod state;

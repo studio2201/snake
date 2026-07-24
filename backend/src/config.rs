@@ -56,7 +56,7 @@ impl AppConfig {
             "Snake_TITLE",
             "SITE_TITLE",
         ])
-        .unwrap_or_else(|| Self::APP_BRAND.to_string());
+        .unwrap_or_else(|| crate::config::APP_BRAND.to_string());
         let base_url =
             env::var("BASE_URL").unwrap_or_else(|_| format!("http://localhost:{port}"));
         let allowed_origins = env::var("ALLOWED_ORIGINS").unwrap_or_default();
